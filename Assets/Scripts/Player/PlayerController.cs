@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f; // Скорость движения игрока
+    [SerializeField] private float moveSpeed = 5f; // Обычная скорость движения игрока
+    [SerializeField] private float runSpeed = 8f; // Скорость бега
     [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
 
     private Rigidbody2D rb;
@@ -44,7 +45,9 @@ public class PlayerController : MonoBehaviour
     {
         if (!isHidden)
         {
-            rb.velocity = new Vector2(movement.x * moveSpeed, rb.velocity.y);
+            // Определение текущей скорости: бег, если удерживается Shift
+            float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : moveSpeed;
+            rb.velocity = new Vector2(movement.x * currentSpeed, rb.velocity.y);
         }
     }
 
