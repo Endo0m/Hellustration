@@ -4,22 +4,19 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Hideout
-  - Door
-  - Enemy
-  - TeleportZone
+  - Ground
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Ground
   - Water
   - UI
-  - Hidden
-  - Player
-  - Enemy
-  - TeleportZone
-  - BoundaryEnemyPatrol
+  - 
+  - 
+  - 
+  - 
+  - 
   - 
   - 
   - 
