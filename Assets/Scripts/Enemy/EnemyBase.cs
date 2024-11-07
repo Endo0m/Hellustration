@@ -7,18 +7,17 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected float walkSpeed = 2f;
     [SerializeField] protected float runSpeed = 4f;
     [SerializeField] protected Transform[] patrolPoints;
-    [SerializeField] protected float stopDuration = 2f;
+    [SerializeField] protected float stopDuration = 2f; // Время остановки на точке для анимации
 
     [Header("Detection Settings")]
     [SerializeField] protected LayerMask playerLayer;
+    [SerializeField] protected LayerMask hiddenLayer; // Слой для проверки укрытия
     [SerializeField] protected float detectionRayLength = 5f;
     [SerializeField] protected Transform detectionOrigin;
 
-    [Header("Pathfinding Settings")]
-    [SerializeField] protected LayerMask groundLayer;
-    [SerializeField] protected float groundCheckDistance = 1f;
+    [Header("Teleport Settings")]
     [SerializeField] protected LayerMask teleportLayer;
-    [SerializeField] protected float levelDifferenceThreshold = 5f; // Порог по оси Y для поиска телепорта
+    [SerializeField] protected float levelDifferenceThreshold = 5f; // Порог для проверки уровня по оси Y
 
     protected Animator animator;
     protected Rigidbody2D rb;
@@ -37,6 +36,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void Update()
     {
         HandleDetection();
+
         if (isChasing)
         {
             StopAllCoroutines();
@@ -78,9 +78,11 @@ public abstract class EnemyBase : MonoBehaviour
             yield return null;
         }
     }
+
     protected virtual IEnumerator PlayAnimationAtPoint(Transform targetPoint)
     {
         isPlayingAnimation = true;
+        // Предполагается, что у точки патруля есть компонент для управления анимацией
         PatrolPoint patrolPoint = targetPoint.GetComponent<PatrolPoint>();
 
         if (patrolPoint != null)
@@ -88,8 +90,8 @@ public abstract class EnemyBase : MonoBehaviour
             float animationDuration = patrolPoint.AnimationDuration;
             float elapsedTime = 0f;
 
-            animator.SetBool("IsPlaying", true); // Предполагается, что в вашем Animator есть параметр "IsPlaying"
-            while (elapsedTime < animationDuration)
+            animator.SetBool("IsPlaying", true);
+            while (elapsedTime < animationDuration && !isChasing)
             {
                 elapsedTime += Time.deltaTime;
                 yield return null;
@@ -109,7 +111,7 @@ public abstract class EnemyBase : MonoBehaviour
         foreach (var teleport in teleports)
         {
             TeleportZone teleportZone = teleport.GetComponent<TeleportZone>();
-            if (teleportZone != null)
+            if (teleportZone != null && Mathf.Abs(teleportZone.GetDestination().position.y - targetPosition.y) < levelDifferenceThreshold)
             {
                 float distanceToTarget = Vector2.Distance(teleportZone.GetDestination().position, targetPosition);
                 if (distanceToTarget < closestDistance)
@@ -131,7 +133,7 @@ public abstract class EnemyBase : MonoBehaviour
         while (isChasing)
         {
             Collider2D player = Physics2D.OverlapCircle(transform.position, detectionRayLength, playerLayer);
-            if (player != null)
+            if (player != null && player.gameObject.layer != LayerMask.NameToLayer("Hidden"))
             {
                 MoveTowards(player.transform.position, runSpeed);
             }

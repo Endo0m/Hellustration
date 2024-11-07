@@ -984,7 +984,7 @@ Transform:
   m_GameObject: {fileID: 893084576}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -18.38, y: 5.43, z: 0}
+  m_LocalPosition: {x: -18.38, y: 5.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2303,16 +2303,16 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
+  hiddenLayer:
+    serializedVersion: 2
+    m_Bits: 64
   detectionRayLength: 5
   detectionOrigin: {fileID: 1408497351}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  groundCheckDistance: 1
   teleportLayer:
     serializedVersion: 2
     m_Bits: 512
   levelDifferenceThreshold: 5
+  moanInterval: 10
 --- !u!95 &1408497355
 Animator:
   serializedVersion: 5
@@ -5567,7 +5567,7 @@ Transform:
   m_GameObject: {fileID: 1871801273}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.94, y: -14.21, z: 0}
+  m_LocalPosition: {x: 0.21, y: -19.65, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5670,7 +5670,7 @@ Transform:
   m_GameObject: {fileID: 1916443320}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 18.339996, y: 6.09, z: 0}
+  m_LocalPosition: {x: 18.339996, y: 5.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
