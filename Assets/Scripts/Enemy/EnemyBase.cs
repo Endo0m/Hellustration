@@ -1,133 +1,204 @@
+using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
 public abstract class EnemyBase : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float patrolSpeed = 2f;
-    [SerializeField] private float chaseSpeed = 4f;
-    [SerializeField] private LayerMask playerLayer;
-    [SerializeField] private LayerMask boundaryLayer;
-
-    [Header("Patrol Settings")]
-    [SerializeField] private float minPatrolDistance = 2f; // Минимальная дистанция патруля
-    [SerializeField] private float maxPatrolDistance = 5f; // Максимальная дистанция патруля
-    private float patrolDistance; // Текущая дистанция патруля
-    private bool isMovingRight = true;
+    [SerializeField] protected float walkSpeed = 2f;
+    [SerializeField] protected float runSpeed = 4f;
+    [SerializeField] protected Transform[] patrolPoints;
+    [SerializeField] protected float stopDuration = 2f;
 
     [Header("Detection Settings")]
-    [SerializeField] private float forwardDetectionRange = 5f; // Длина луча впереди
-    [SerializeField] private float backwardDetectionRange = 3f; // Длина луча сзади
-    private bool isChasing = false;
+    [SerializeField] protected LayerMask playerLayer;
+    [SerializeField] protected float detectionRayLength = 5f;
+    [SerializeField] protected Transform detectionOrigin;
 
-    private Rigidbody2D rb;
-    private PlayerController player;
+    [Header("Pathfinding Settings")]
+    [SerializeField] protected LayerMask groundLayer;
+    [SerializeField] protected float groundCheckDistance = 1f;
+    [SerializeField] protected LayerMask teleportLayer;
+    [SerializeField] protected float levelDifferenceThreshold = 5f; // Порог по оси Y для поиска телепорта
 
-    private void Start()
+    protected Animator animator;
+    protected Rigidbody2D rb;
+    protected int currentPatrolIndex = 0;
+    protected bool isChasing = false;
+    protected bool isPlayingAnimation = false;
+    protected bool isMovingRight = true;
+
+    protected virtual void Start()
     {
+        animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        player = FindObjectOfType<PlayerController>();
-        SetRandomPatrolDistance();
+        StartCoroutine(PatrolRoutine());
     }
 
-    private void Update()
+    protected virtual void Update()
     {
+        HandleDetection();
         if (isChasing)
         {
-            ChasePlayer();
-        }
-        else
-        {
-            Patrol();
-            DetectPlayer();
+            StopAllCoroutines();
+            StartCoroutine(ChasePlayer());
         }
     }
 
-    private void Patrol()
+    protected virtual IEnumerator PatrolRoutine()
     {
-        if (patrolDistance <= 0)
+        while (true)
         {
-            SetRandomPatrolDistance();
-            isMovingRight = !isMovingRight; // Меняем направление
+            if (!isPlayingAnimation && !isChasing)
+            {
+                Transform targetPoint = patrolPoints[currentPatrolIndex];
+                Vector2 targetPosition = targetPoint.position;
+
+                if (Mathf.Abs(transform.position.y - targetPosition.y) > levelDifferenceThreshold)
+                {
+                    UseTeleportToReachTarget(targetPosition);
+                }
+                else
+                {
+                    while (Vector2.Distance(transform.position, targetPosition) > 0.1f && !isChasing)
+                    {
+                        MoveTowards(targetPosition, walkSpeed);
+                        yield return null;
+                    }
+
+                    StopMovement();
+                    if (!isChasing)
+                    {
+                        StartCoroutine(PlayAnimationAtPoint(targetPoint));
+                        yield return new WaitUntil(() => !isPlayingAnimation);
+                    }
+
+                    currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
+                }
+            }
+            yield return null;
+        }
+    }
+    protected virtual IEnumerator PlayAnimationAtPoint(Transform targetPoint)
+    {
+        isPlayingAnimation = true;
+        PatrolPoint patrolPoint = targetPoint.GetComponent<PatrolPoint>();
+
+        if (patrolPoint != null)
+        {
+            float animationDuration = patrolPoint.AnimationDuration;
+            float elapsedTime = 0f;
+
+            animator.SetBool("IsPlaying", true); // Предполагается, что в вашем Animator есть параметр "IsPlaying"
+            while (elapsedTime < animationDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                yield return null;
+            }
+            animator.SetBool("IsPlaying", false);
         }
 
-        float direction = isMovingRight ? 1 : -1;
-        rb.velocity = new Vector2(direction * patrolSpeed, rb.velocity.y);
-        patrolDistance -= Time.deltaTime * patrolSpeed;
-        FlipSprite(direction);
+        isPlayingAnimation = false;
     }
 
-    private void SetRandomPatrolDistance()
+    protected virtual void UseTeleportToReachTarget(Vector2 targetPosition)
     {
-        patrolDistance = Random.Range(minPatrolDistance, maxPatrolDistance);
+        Collider2D[] teleports = Physics2D.OverlapCircleAll(transform.position, detectionRayLength, teleportLayer);
+        Transform bestTeleport = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (var teleport in teleports)
+        {
+            TeleportZone teleportZone = teleport.GetComponent<TeleportZone>();
+            if (teleportZone != null)
+            {
+                float distanceToTarget = Vector2.Distance(teleportZone.GetDestination().position, targetPosition);
+                if (distanceToTarget < closestDistance)
+                {
+                    closestDistance = distanceToTarget;
+                    bestTeleport = teleportZone.transform;
+                }
+            }
+        }
+
+        if (bestTeleport != null)
+        {
+            transform.position = bestTeleport.position;
+        }
     }
 
-    private void DetectPlayer()
+    protected virtual IEnumerator ChasePlayer()
+    {
+        while (isChasing)
+        {
+            Collider2D player = Physics2D.OverlapCircle(transform.position, detectionRayLength, playerLayer);
+            if (player != null)
+            {
+                MoveTowards(player.transform.position, runSpeed);
+            }
+            else
+            {
+                isChasing = false;
+                StartCoroutine(PatrolRoutine());
+            }
+            yield return null;
+        }
+    }
+
+    protected virtual void MoveTowards(Vector2 targetPosition, float speed)
+    {
+        Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
+        rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
+
+        if (direction.x > 0 && !isMovingRight)
+        {
+            Flip();
+        }
+        else if (direction.x < 0 && isMovingRight)
+        {
+            Flip();
+        }
+    }
+
+    protected virtual void StopMovement()
+    {
+        rb.velocity = Vector2.zero;
+    }
+
+    protected virtual void HandleDetection()
     {
         Vector2 forwardDirection = isMovingRight ? Vector2.right : Vector2.left;
-        Vector2 backwardDirection = -forwardDirection;
+        Vector2 backwardDirection = isMovingRight ? Vector2.left : Vector2.right;
 
-        // Проверка игрока впереди
-        RaycastHit2D forwardHit = Physics2D.Raycast(transform.position, forwardDirection, forwardDetectionRange, playerLayer);
-        if (forwardHit.collider != null && forwardHit.collider.CompareTag("Player"))
+        RaycastHit2D hitForward = Physics2D.Raycast(detectionOrigin.position, forwardDirection, detectionRayLength, playerLayer);
+        RaycastHit2D hitBackward = Physics2D.Raycast(detectionOrigin.position, backwardDirection, detectionRayLength, playerLayer);
+
+        Debug.DrawRay(detectionOrigin.position, forwardDirection * detectionRayLength, Color.red);
+        Debug.DrawRay(detectionOrigin.position, backwardDirection * detectionRayLength, Color.blue);
+
+        if ((hitForward.collider != null && hitForward.collider.CompareTag("Player")) ||
+            (hitBackward.collider != null && hitBackward.collider.CompareTag("Player")))
         {
             isChasing = true;
-            Debug.Log("Враг обнаружил игрока впереди и начинает преследование");
-            return;
-        }
-
-        // Проверка игрока сзади
-        RaycastHit2D backwardHit = Physics2D.Raycast(transform.position, backwardDirection, backwardDetectionRange, playerLayer);
-        if (backwardHit.collider != null && backwardHit.collider.CompareTag("Player"))
-        {
-            isChasing = true;
-            Debug.Log("Враг обнаружил игрока сзади и начинает преследование");
         }
     }
 
-    private void ChasePlayer()
+    protected virtual void Flip()
     {
-        if (player.IsHidden || Vector2.Distance(transform.position, player.transform.position) > Mathf.Max(forwardDetectionRange, backwardDetectionRange) * 1.5f)
-        {
-            isChasing = false;
-            SetRandomPatrolDistance();
-            Debug.Log("Враг потерял игрока и возвращается к патрулированию");
-            return;
-        }
-
-        Vector2 direction = (player.transform.position - transform.position).normalized;
-        rb.velocity = new Vector2(direction.x * chaseSpeed, rb.velocity.y);
-        FlipSprite(direction.x);
+        isMovingRight = !isMovingRight;
+        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
     }
 
-    private void FlipSprite(float directionX)
+    protected virtual void OnDrawGizmosSelected()
     {
-        if ((directionX > 0 && transform.localScale.x < 0) || (directionX < 0 && transform.localScale.x > 0))
+        if (detectionOrigin != null)
         {
-            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+            Gizmos.color = Color.red;
+            Vector3 forwardDirection = isMovingRight ? Vector3.right : Vector3.left;
+            Gizmos.DrawLine(detectionOrigin.position, detectionOrigin.position + forwardDirection * detectionRayLength);
+
+            Gizmos.color = Color.blue;
+            Vector3 backwardDirection = isMovingRight ? Vector3.left : Vector3.right;
+            Gizmos.DrawLine(detectionOrigin.position, detectionOrigin.position + backwardDirection * detectionRayLength);
         }
     }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == Mathf.Log(boundaryLayer.value, 2))
-        {
-            isMovingRight = !isMovingRight;
-            SetRandomPatrolDistance();
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        // Визуализация лучей для обнаружения игрока
-        Gizmos.color = Color.red;
-        Vector2 forwardDirection = isMovingRight ? Vector2.right : Vector2.left;
-        Gizmos.DrawLine(transform.position, transform.position + (Vector3)forwardDirection * forwardDetectionRange);
-
-        Gizmos.color = Color.blue;
-        Vector2 backwardDirection = -forwardDirection;
-        Gizmos.DrawLine(transform.position, transform.position + (Vector3)backwardDirection * backwardDetectionRange);
-    }
-
-    protected abstract void Attack();
 }

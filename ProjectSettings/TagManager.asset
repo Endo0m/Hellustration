@@ -8,11 +8,13 @@ TagManager:
   - Door
   - Enemy
   - TeleportZone
+  - SpecialZone
+  - Ground
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Ground
   - Water
   - UI
   - Hidden
