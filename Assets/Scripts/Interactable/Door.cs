@@ -1,9 +1,11 @@
 using UnityEngine;
+using System.Collections;
 
 public class Door : MonoBehaviour, IInteractable
 {
     [SerializeField] private Animator doorAnimator; // Аниматор для управления анимацией двери
     [SerializeField] private GameObject transitionTrigger; // Ссылка на триггер для перехода между листами
+    [SerializeField] private float autoCloseDelay = 3f; // Задержка перед автоматическим закрытием двери
     private bool isOpen = false; // Текущее состояние двери
 
     private void Start()
@@ -18,11 +20,11 @@ public class Door : MonoBehaviour, IInteractable
     {
         if (isOpen)
         {
-            CloseDoor();
+            CloseDoor(); // Если дверь открыта, закрываем её
         }
         else
         {
-            OpenDoor();
+            OpenDoor(); // Если дверь закрыта, открываем её
         }
     }
 
@@ -35,6 +37,9 @@ public class Door : MonoBehaviour, IInteractable
             transitionTrigger.SetActive(true); // Активируем триггер перехода
         }
         Debug.Log("Дверь открыта");
+
+        // Запускаем корутину для автоматического закрытия двери
+        StartCoroutine(AutoCloseDoor());
     }
 
     private void CloseDoor()
@@ -46,5 +51,11 @@ public class Door : MonoBehaviour, IInteractable
             transitionTrigger.SetActive(false); // Деактивируем триггер перехода
         }
         Debug.Log("Дверь закрыта");
+    }
+
+    private IEnumerator AutoCloseDoor()
+    {
+        yield return new WaitForSeconds(autoCloseDelay); // Ждём заданное количество секунд
+        CloseDoor(); // Закрываем дверь автоматически
     }
 }

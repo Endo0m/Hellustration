@@ -14,6 +14,11 @@ public class TeleportZone : MonoBehaviour
         }
     }
 
+    public Transform GetDestination()
+    {
+        return destinationPoint;
+    }
+
     private void OnDrawGizmos()
     {
         if (destinationPoint != null)

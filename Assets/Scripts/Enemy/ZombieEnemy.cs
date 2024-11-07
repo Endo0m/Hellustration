@@ -2,11 +2,12 @@ using UnityEngine;
 
 public class ZombieEnemy : EnemyBase
 {
-    protected override void Attack()
+    protected override void HandleDetection()
     {
-        // Реализация атаки зомби
-        Debug.Log("Зомби атакует игрока");
-        // Здесь можно добавить логику нанесения урона игроку
+        // Реализуем логику обнаружения для SimpleEnemy
+        Debug.Log("SimpleEnemy выполняет свою логику обнаружения!");
     }
+
+  
 }
 
