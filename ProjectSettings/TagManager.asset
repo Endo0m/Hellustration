@@ -3,21 +3,12 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags:
-<<<<<<< HEAD
-=======
-  - Hideout
-  - Door
-  - Enemy
-  - TeleportZone
-  - SpecialZone
->>>>>>> Arthur
-  - Ground
+  tags: []
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Ground
+  - 
   - Water
   - UI
   - 
