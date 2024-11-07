@@ -1,36 +1,78 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using System.Collections;
 
 public class PlayerPulseUI : MonoBehaviour
 {
-    [SerializeField] private Image pulseImage; // UI-ËÁÓ·‡ÊÂÌËÂ, ÍÓÚÓÓÂ ·Û‰ÂÚ ÔÛÎ¸ÒËÓ‚‡Ú¸
-    [SerializeField] private float pulseDuration = 0.5f; // œÓ‰ÓÎÊËÚÂÎ¸ÌÓÒÚ¸ Ó‰ÌÓ„Ó ˆËÍÎ‡ ÔÛÎ¸Ò‡ˆËË
-    [SerializeField] private float pulseScale = 1.2f; // Ã‡Ò¯Ú‡· ÔË ÔÛÎ¸Ò‡ˆËË
+    [SerializeField] private Image pulseImage; // UI-–∏–∑–æ–±—Ä–∞–∂–µ–Ω–∏–µ, –∫–æ—Ç–æ—Ä–æ–µ –±—É–¥–µ—Ç –º–∏–≥–∞—Ç—å
+    [SerializeField] private float pulseDuration = 0.5f; // –î–ª–∏—Ç–µ–ª—å–Ω–æ—Å—Ç—å –æ–¥–Ω–æ–≥–æ –º–∏–≥–∞–Ω–∏—è
+    [SerializeField] private float pulseScale = 1.2f; // –ö–æ—ç—Ñ—Ñ–∏—Ü–∏–µ–Ω—Ç –º–∞—Å—à—Ç–∞–±–∏—Ä–æ–≤–∞–Ω–∏—è –º–∏–≥–∞–Ω–∏—è
+    private float pulseCounter = 100f;
 
     private Tween currentPulseTween;
 
-    // ÃÂÚÓ‰ ‰Îˇ Á‡ÔÛÒÍ‡ ÔÛÎ¸Ò‡ˆËË
+    private void Update()
+    {
+        pulseImage.fillAmount = pulseCounter / 100f;
+        Debug.Log(pulseCounter);
+    }
+
+    // –ó–∞–ø—É—Å–∫–∞–µ—Ç –º–∏–≥–∞–Ω–∏–µ
     public void StartPulse()
     {
         if (currentPulseTween != null && currentPulseTween.IsActive())
         {
-            currentPulseTween.Kill(); // ŒÒÚ‡Ì‡‚ÎË‚‡ÂÏ ÚÂÍÛ˘Û˛ ‡ÌËÏ‡ˆË˛, ÂÒÎË ÂÒÚ¸
+            currentPulseTween.Kill(); // –û—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç —Ç–µ–∫—É—â–µ–µ –º–∏–≥–∞–Ω–∏–µ, –µ—Å–ª–∏ –æ–Ω–æ —É–∂–µ –∑–∞–ø—É—â–µ–Ω–æ
         }
 
-        // œÛÎ¸Ò‡ˆËˇ ËÁÓ·‡ÊÂÌËˇ (Û‚ÂÎË˜ÂÌËÂ Ë ‚ÓÁ‚‡Ú Í ËÒıÓ‰ÌÓÏÛ ‡ÁÏÂÛ)
+        // –°–æ–∑–¥–∞—ë—Ç –Ω–æ–≤–æ–µ –º–∏–≥–∞–Ω–∏–µ (—É–≤–µ–ª–∏—á–∏–≤–∞–µ—Ç —Ä–∞–∑–º–µ—Ä –∏–∑–æ–±—Ä–∞–∂–µ–Ω–∏—è –∏ –∑–∞—Ç–µ–º —É–º–µ–Ω—å—à–∞–µ—Ç –µ–≥–æ –æ–±—Ä–∞—Ç–Ω–æ)
         currentPulseTween = pulseImage.rectTransform.DOScale(pulseScale, pulseDuration)
             .SetEase(Ease.InOutSine)
-            .SetLoops(-1, LoopType.Yoyo); // ¡ÂÒÍÓÌÂ˜Ì˚È ˆËÍÎ Ò ‚ÓÁ‚‡ÚÓÏ
+            .SetLoops(-1, LoopType.Yoyo); // –ü–æ–≤—Ç–æ—Ä—è–µ—Ç –º–∏–≥–∞–Ω–∏–µ –±–µ—Å–∫–æ–Ω–µ—á–Ω–æ
     }
 
-    // ÃÂÚÓ‰ ‰Îˇ ÓÒÚ‡ÌÓ‚ÍË ÔÛÎ¸Ò‡ˆËË
+
+    // –û—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç –º–∏–≥–∞–Ω–∏–µ
     public void StopPulse()
     {
         if (currentPulseTween != null && currentPulseTween.IsActive())
         {
-            currentPulseTween.Kill(); // ŒÒÚ‡Ì‡‚ÎË‚‡ÂÏ ÚÂÍÛ˘Û˛ ‡ÌËÏ‡ˆË˛
-            pulseImage.rectTransform.localScale = Vector3.one; // ¬ÓÁ‚‡˘‡ÂÏ Í ÒÚ‡Ì‰‡ÚÌÓÏÛ ‡ÁÏÂÛ
+            currentPulseTween.Kill(); // –û—Å—Ç–∞–Ω–∞–≤–ª–∏–≤–∞–µ—Ç —Ç–µ–∫—É—â–µ–µ –º–∏–≥–∞–Ω–∏–µ
+            pulseImage.rectTransform.localScale = Vector3.one; // –í–æ–∑–≤—Ä–∞—â–∞–µ—Ç –∏–∑–æ–±—Ä–∞–∂–µ–Ω–∏—é –∏—Å—Ö–æ–¥–Ω—ã–π —Ä–∞–∑–º–µ—Ä
         }
+    }
+
+    public IEnumerator PulseCoroutine()
+    {
+        DecreasePulseCounter();
+        StartPulse();
+        yield return new WaitForSeconds(5f); // –∂–¥–µ–º 5 —Å–µ–∫—É–Ω–¥
+        StopPulse();
+        yield return StartCoroutine(RestorePulseCounter());
+    }
+
+    private void DecreasePulseCounter()
+    {
+        if (pulseCounter > 0)
+        {
+            pulseCounter -= 20f;
+        }
+    }
+
+    private IEnumerator RestorePulseCounter()
+    {
+        float startTime = Time.time;
+        float duration = 10f; // –≤—Ä–µ–º—è –≤–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏—è
+        float startValue = pulseCounter;
+        float endValue = 100f;
+
+        while (Time.time - startTime < duration)
+        {
+            pulseCounter = Mathf.Lerp(startValue, endValue, (Time.time - startTime) / duration);
+            yield return null;
+        }
+
+        pulseCounter = endValue;
     }
 }

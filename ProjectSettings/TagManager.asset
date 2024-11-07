@@ -4,12 +4,9 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Hideout
-  - Door
+  - Ground
   - Enemy
   - TeleportZone
-  - SpecialZone
-  - Ground
   layers:
   - Default
   - TransparentFX
@@ -17,11 +14,11 @@ TagManager:
   - Ground
   - Water
   - UI
-  - Hidden
-  - Player
   - Enemy
   - TeleportZone
-  - BoundaryEnemyPatrol
+  - Player
+  - Hidden
+  - 
   - 
   - 
   - 
