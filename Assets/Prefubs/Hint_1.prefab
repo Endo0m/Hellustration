@@ -11,9 +11,8 @@ GameObject:
   - component: {fileID: 7178113837905138199}
   - component: {fileID: 4792293958110192567}
   - component: {fileID: 6141962093284685601}
-  - component: {fileID: 6675912085946351700}
   m_Layer: 5
-  m_Name: Slot
+  m_Name: Hint_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300040, guid: ae3918a914038694d852d0bb81f62473, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -76,16 +75,3 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6675912085946351700
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2953904362354380284}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3abe1694ef2325e4fb4ad21b22c547de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemName: test
