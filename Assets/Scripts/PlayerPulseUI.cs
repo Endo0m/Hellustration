@@ -15,7 +15,6 @@ public class PlayerPulseUI : MonoBehaviour
     private void Update()
     {
         pulseImage.fillAmount = pulseCounter / 100f;
-        Debug.Log(pulseCounter);
     }
 
     // Запускает мигание
