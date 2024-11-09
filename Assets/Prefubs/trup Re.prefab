@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4898253363286971845}
   - component: {fileID: 2729275643568300636}
   - component: {fileID: 6796271896780875898}
-  - component: {fileID: -8166418285501423305}
+  - component: {fileID: 1655006040235380920}
   m_Layer: 0
   m_Name: trup Re
   m_TagString: Untagged
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: ae4d286a1dc8dba4f9f8e48cf17b1fdd, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -131,7 +131,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 5, y: 5}
   m_EdgeRadius: 0
---- !u!114 &-8166418285501423305
+--- !u!114 &1655006040235380920
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,6 +140,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8611183112137660580}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5b122adb60913c45b82280340d625e3, type: 3}
+  m_Script: {fileID: 11500000, guid: f06c8c19203da954a859c083ba24ade8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemName: 1

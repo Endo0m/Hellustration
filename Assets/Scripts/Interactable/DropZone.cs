@@ -3,33 +3,34 @@ using UnityEngine;
 
 public class DropZone : MonoBehaviour
 {
-    [SerializeField] private List<string> requiredItemNames; // Имена предметов, необходимых для крафта ловушки
-    [SerializeField] private GameObject trapPrefab; // Префаб ловушки
-    private List<string> collectedItems = new List<string>();
-
-    // Метод для добавления предмета в DropZone
-    public void AddItem(string itemName)
+    [System.Serializable]
+    public class ItemCombination
     {
-        if (!requiredItemNames.Contains(itemName))
-        {
-            Debug.LogWarning($"Item '{itemName}' is not required for this DropZone.");
-            return;
-        }
-
-        collectedItems.Add(itemName);
-        Debug.Log($"Item '{itemName}' added to DropZone.");
-
-        if (collectedItems.Count == requiredItemNames.Count)
-        {
-            CreateTrap();
-        }
+        public string itemName; // Имя предмета, который используется
+        public string targetItemName; // Имя целевого объекта
+        public GameObject resultPrefab; // Префаб результата
     }
 
-    // Метод создания ловушки
-    private void CreateTrap()
+    [SerializeField] private List<ItemCombination> itemCombinations; // Список возможных комбинаций
+
+    public bool TryCombineWithItem(string itemName, string targetName)
     {
-        Instantiate(trapPrefab, transform.position, Quaternion.identity);
-        collectedItems.Clear(); // Очистка списка после создания ловушки
-        Debug.Log("Trap created!");
+        foreach (var combination in itemCombinations)
+        {
+            Debug.Log($"Checking combination: itemName = {itemName}, targetItemName = {combination.targetItemName}");
+            if (combination.itemName == itemName && combination.targetItemName == targetName)
+            {
+                // Удаление текущего объекта с DropZone
+                Destroy(gameObject);
+
+                // Создание нового объекта на месте текущего
+                Instantiate(combination.resultPrefab, transform.position, Quaternion.identity);
+                Debug.Log($"Combined item '{itemName}' with '{combination.targetItemName}' to create '{combination.resultPrefab.name}'.");
+                return true;
+            }
+        }
+
+        Debug.LogWarning($"Failed to combine item '{itemName}' in DropZone.");
+        return false;
     }
 }

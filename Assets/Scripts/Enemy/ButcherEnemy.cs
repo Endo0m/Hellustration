@@ -1,6 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-public class ButcherEnemy : EnemyBase
+public class ButcherEnemy : MonoBehaviour
 {
-    // Можно переопределить или добавить специфическое поведение
+    [SerializeField] private List<string> acceptedItemNames; // Имена предметов, которые уничтожают Мясника
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        ItemIdentifier itemIdentifier = other.GetComponent<ItemIdentifier>();
+        if (itemIdentifier != null && acceptedItemNames.Contains(itemIdentifier.ItemName))
+        {
+            Debug.Log($"Item '{itemIdentifier.ItemName}' triggered the Butcher's death.");
+            Destroy(gameObject); // Уничтожение "Мясника"
+        }
+    }
 }

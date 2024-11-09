@@ -10,6 +10,9 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     private Transform originalParent;
     private Canvas parentCanvas;
 
+    // Новое свойство для комбинирования
+    public ICombinable CombinableData { get; private set; }
+
     public string ItemName => itemName;
 
     private void Awake()
@@ -18,10 +21,11 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         parentCanvas = GetComponentInParent<Canvas>();
     }
 
-    public void Initialize(Sprite sprite, string name, CollectController controller)
+    public void Initialize(Sprite sprite, string name, ICombinable combinableData = null)
     {
         itemName = name;
         itemImage.sprite = sprite;
+        CombinableData = combinableData; // Инициализация данных для комбинирования
         SetDraggable(false); // Отключаем перетаскивание по умолчанию
     }
 
@@ -63,7 +67,6 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     {
         if (!isDraggable) return;
 
-        // Используем Raycast для определения DropZone
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
 
@@ -72,19 +75,22 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
             DropZone dropZone = hit.collider.GetComponent<DropZone>();
             if (dropZone != null)
             {
-                Debug.Log($"Item '{itemName}' placed in {dropZone.gameObject.name}");
+                // Передача имени текущего предмета и имени DropZone
+                if (dropZone.TryCombineWithItem(itemName, dropZone.name))
+                {
+                    Destroy(gameObject); // Удаляем исходный объект после успешного комбинирования
+                    return;
+                }
 
-                // Добавляем предмет в DropZone
-                dropZone.AddItem(itemName);
-                Destroy(gameObject); // Удаляем предмет из UI
-                return;
+                Debug.LogWarning($"Item '{itemName}' could not be combined in {dropZone.gameObject.name}.");
             }
         }
 
-        // Если размещение не удалось, возвращаем предмет на место
+        // Возврат на место в случае неудачи
         transform.SetParent(originalParent);
         transform.localPosition = Vector3.zero;
         GetComponent<CanvasGroup>().blocksRaycasts = true;
-        Debug.Log($"Item '{itemName}' could not be placed and was returned to inventory.");
+        Debug.Log($"Item '{itemName}' was returned to its original position.");
     }
+
 }
