@@ -3,13 +3,15 @@ using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f; // Обычная скорость движения игрока
-    [SerializeField] private float runSpeed = 8f; // Скорость бега
-    [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
+    [SerializeField] private float moveSpeed = 5f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    [SerializeField] private float runSpeed = 8f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    [SerializeField] private float interactionRadius = 1f; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    [SerializeField] private PlayerPulseUI playerPulseUI;
 
     private Rigidbody2D rb;
     private Vector2 movement;
     private bool isHidden = false;
+    private bool isRunningFast = false;
 
     public bool IsHidden { get { return isHidden; } }
 
@@ -22,7 +24,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isHidden)
         {
-            // Проверка на выход из укрытия
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if (Input.GetKeyDown(KeyCode.E))
             {
                 Reveal();
@@ -30,11 +32,11 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // Управление движением
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         movement.x = Input.GetAxisRaw("Horizontal");
         RotateToMouse();
 
-        // Проверка на взаимодействие
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if (Input.GetKeyDown(KeyCode.E))
         {
             Interact();
@@ -45,9 +47,20 @@ public class PlayerController : MonoBehaviour
     {
         if (!isHidden)
         {
-            // Определение текущей скорости: бег, если удерживается Shift
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Shift
             float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : moveSpeed;
             rb.velocity = new Vector2(movement.x * currentSpeed, rb.velocity.y);
+
+             if (Mathf.Abs(rb.velocity.x) > 6f && !isRunningFast)
+            {
+                playerPulseUI.PulseDecreaseRun(true);
+                isRunningFast = true;
+            }
+            else if (Mathf.Abs(rb.velocity.x) <= 6f && isRunningFast)
+            {
+                playerPulseUI.PulseDecreaseRun(false);
+                isRunningFast = false;
+            }
         }
     }
 
@@ -57,21 +70,21 @@ public class PlayerController : MonoBehaviour
         Vector3 direction = (mousePosition - transform.position).normalized;
 
         if (direction.x < 0)
-            transform.localScale = new Vector3(-1, 1, 1); // Поворот влево
+            transform.localScale = new Vector3(-1, 1, 1); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         else if (direction.x > 0)
-            transform.localScale = new Vector3(1, 1, 1); // Поворот вправо
+            transform.localScale = new Vector3(1, 1, 1); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     private void Interact()
     {
-        // Поиск объектов для взаимодействия в радиусе
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         Collider2D[] interactables = Physics2D.OverlapCircleAll(transform.position, interactionRadius);
         foreach (var obj in interactables)
         {
             IInteractable interactable = obj.GetComponent<IInteractable>();
             if (interactable != null)
             {
-                interactable.Interact(this); // Взаимодействие с объектом
+                interactable.Interact(this); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 break;
             }
         }
@@ -83,14 +96,14 @@ public class PlayerController : MonoBehaviour
         transform.position = hideout.position;
         gameObject.layer = LayerMask.NameToLayer("Hidden");
         rb.velocity = Vector2.zero;
-        Debug.Log("Игрок спрятался");
+        Debug.Log("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
     }
 
     public void Reveal()
     {
         isHidden = false;
         gameObject.layer = LayerMask.NameToLayer("Player");
-        Debug.Log("Игрок вышел из укрытия");
+        Debug.Log("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
     }
 
     private void OnDrawGizmosSelected()
