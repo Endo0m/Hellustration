@@ -46237,6 +46237,7 @@ MonoBehaviour:
   moveSpeed: 8
   runSpeed: 10
   interactionRadius: 1
+  playerPulseUI: {fileID: 2070566351}
 --- !u!50 &1807495331
 Rigidbody2D:
   serializedVersion: 4
