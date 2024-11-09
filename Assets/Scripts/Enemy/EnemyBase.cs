@@ -1,206 +1,180 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class EnemyBase : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    [SerializeField] protected float walkSpeed = 2f;
-    [SerializeField] protected float runSpeed = 4f;
-    [SerializeField] protected Transform[] patrolPoints;
-    [SerializeField] protected float stopDuration = 2f; // Время остановки на точке для анимации
+    [Header("Patrol Settings")]
+    [SerializeField] private List<Transform> patrolPoints; // Точки патрулирования
+    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private List<float> waitTimesAtPoints; // Время ожидания на каждой точке
+    [SerializeField] protected Animator animator;
 
     [Header("Detection Settings")]
-    [SerializeField] protected LayerMask playerLayer;
-    [SerializeField] protected LayerMask hiddenLayer; // Слой для проверки укрытия
-    [SerializeField] protected float detectionRayLength = 5f;
-    [SerializeField] protected Transform detectionOrigin;
+    [SerializeField] private float rayLengthForward = 8f;
+    [SerializeField] private float rayLengthBackward = 5f;
+    [SerializeField] private LayerMask playerLayer;
 
-    [Header("Teleport Settings")]
-    [SerializeField] protected LayerMask teleportLayer;
-    [SerializeField] protected float levelDifferenceThreshold = 5f; // Порог для проверки уровня по оси Y
+    private int currentPatrolIndex = 0;
+    private bool waitingAtPoint = false;
+    private bool chasingPlayer = false;
+    private Rigidbody2D rb;
+    private Transform playerTransform;
 
-    protected Animator animator;
-    protected Rigidbody2D rb;
-    protected int currentPatrolIndex = 0;
-    protected bool isChasing = false;
-    protected bool isPlayingAnimation = false;
-    protected bool isMovingRight = true;
+    protected virtual void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            Debug.LogError("EnemyBase requires a Rigidbody2D component.");
+        }
+    }
 
     protected virtual void Start()
     {
-        animator = GetComponent<Animator>();
-        rb = GetComponent<Rigidbody2D>();
+        if (patrolPoints == null || patrolPoints.Count == 0)
+        {
+            Debug.LogWarning("No patrol points set for enemy.");
+            return;
+        }
+
+        if (waitTimesAtPoints.Count != patrolPoints.Count)
+        {
+            Debug.LogError("Number of wait times must match number of patrol points.");
+            return;
+        }
+
         StartCoroutine(PatrolRoutine());
+        PlayWalkingAnimation(); // Начинаем с анимации ходьбы
     }
 
-    protected virtual void Update()
+    private void Update()
     {
-        HandleDetection();
-
-        if (isChasing)
+        if (!waitingAtPoint)
         {
-            StopAllCoroutines();
-            StartCoroutine(ChasePlayer());
+            DetectPlayerWithRays();
         }
     }
 
-    protected virtual IEnumerator PatrolRoutine()
+    private IEnumerator PatrolRoutine()
     {
         while (true)
         {
-            if (!isPlayingAnimation && !isChasing)
+            if (!chasingPlayer && !waitingAtPoint)
             {
                 Transform targetPoint = patrolPoints[currentPatrolIndex];
-                Vector2 targetPosition = targetPoint.position;
+                MoveToTarget(targetPoint.position);
 
-                if (Mathf.Abs(transform.position.y - targetPosition.y) > levelDifferenceThreshold)
+                if (Vector2.Distance(transform.position, targetPoint.position) < 0.1f)
                 {
-                    UseTeleportToReachTarget(targetPosition);
-                }
-                else
-                {
-                    while (Vector2.Distance(transform.position, targetPosition) > 0.1f && !isChasing)
-                    {
-                        MoveTowards(targetPosition, walkSpeed);
-                        yield return null;
-                    }
-
-                    StopMovement();
-                    if (!isChasing)
-                    {
-                        StartCoroutine(PlayAnimationAtPoint(targetPoint));
-                        yield return new WaitUntil(() => !isPlayingAnimation);
-                    }
-
-                    currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
+                    StartCoroutine(HandlePointInteraction(currentPatrolIndex));
+                    currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Count;
                 }
             }
             yield return null;
         }
     }
 
-    protected virtual IEnumerator PlayAnimationAtPoint(Transform targetPoint)
-    {
-        isPlayingAnimation = true;
-        // Предполагается, что у точки патруля есть компонент для управления анимацией
-        PatrolPoint patrolPoint = targetPoint.GetComponent<PatrolPoint>();
-
-        if (patrolPoint != null)
-        {
-            float animationDuration = patrolPoint.AnimationDuration;
-            float elapsedTime = 0f;
-
-            animator.SetBool("IsPlaying", true);
-            while (elapsedTime < animationDuration && !isChasing)
-            {
-                elapsedTime += Time.deltaTime;
-                yield return null;
-            }
-            animator.SetBool("IsPlaying", false);
-        }
-
-        isPlayingAnimation = false;
-    }
-
-    protected virtual void UseTeleportToReachTarget(Vector2 targetPosition)
-    {
-        Collider2D[] teleports = Physics2D.OverlapCircleAll(transform.position, detectionRayLength, teleportLayer);
-        Transform bestTeleport = null;
-        float closestDistance = Mathf.Infinity;
-
-        foreach (var teleport in teleports)
-        {
-            TeleportZone teleportZone = teleport.GetComponent<TeleportZone>();
-            if (teleportZone != null && Mathf.Abs(teleportZone.GetDestination().position.y - targetPosition.y) < levelDifferenceThreshold)
-            {
-                float distanceToTarget = Vector2.Distance(teleportZone.GetDestination().position, targetPosition);
-                if (distanceToTarget < closestDistance)
-                {
-                    closestDistance = distanceToTarget;
-                    bestTeleport = teleportZone.transform;
-                }
-            }
-        }
-
-        if (bestTeleport != null)
-        {
-            transform.position = bestTeleport.position;
-        }
-    }
-
-    protected virtual IEnumerator ChasePlayer()
-    {
-        while (isChasing)
-        {
-            Collider2D player = Physics2D.OverlapCircle(transform.position, detectionRayLength, playerLayer);
-            if (player != null && player.gameObject.layer != LayerMask.NameToLayer("Hidden"))
-            {
-                MoveTowards(player.transform.position, runSpeed);
-            }
-            else
-            {
-                isChasing = false;
-                StartCoroutine(PatrolRoutine());
-            }
-            yield return null;
-        }
-    }
-
-    protected virtual void MoveTowards(Vector2 targetPosition, float speed)
+    private void MoveToTarget(Vector2 targetPosition)
     {
         Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
-        rb.velocity = new Vector2(direction.x * speed, rb.velocity.y);
+        rb.velocity = direction * moveSpeed;
 
-        if (direction.x > 0 && !isMovingRight)
+        if (animator != null)
         {
-            Flip();
-        }
-        else if (direction.x < 0 && isMovingRight)
-        {
-            Flip();
+            animator.SetBool("IsWalking", true);
         }
     }
 
-    protected virtual void StopMovement()
+    private IEnumerator HandlePointInteraction(int pointIndex)
+    {
+        waitingAtPoint = true;
+        rb.velocity = Vector2.zero; // Остановка движения
+        rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation; // Заморозка позиции по X
+        animator.SetBool("IsWalking", false); // Отключение анимации ходьбы
+
+        animator.SetBool($"Point_{pointIndex + 1}", true); // Включение анимации точки
+
+        float waitTime = waitTimesAtPoints[pointIndex];
+        yield return new WaitForSeconds(waitTime);
+
+        animator.SetBool($"Point_{pointIndex + 1}", false); // Выключение анимации точки
+
+        animator.SetBool("IsWalking", true);
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation; // Снятие заморозки позиции
+        waitingAtPoint = false;
+    }
+
+    private void DetectPlayerWithRays()
+    {
+        Vector2 forwardDirection = transform.right;
+        Vector2 backwardDirection = -transform.right;
+        RaycastHit2D hitForward = Physics2D.Raycast(transform.position, forwardDirection, rayLengthForward, playerLayer);
+        RaycastHit2D hitBackward = Physics2D.Raycast(transform.position, backwardDirection, rayLengthBackward, playerLayer);
+
+        if (hitForward.collider != null)
+        {
+            chasingPlayer = true;
+            playerTransform = hitForward.transform;
+            StopAllCoroutines();
+            StartCoroutine(ChasePlayer());
+        }
+        else if (hitBackward.collider != null)
+        {
+            chasingPlayer = true;
+            playerTransform = hitBackward.transform;
+            StopAllCoroutines();
+            StartCoroutine(ChasePlayer());
+        }
+        else if (chasingPlayer)
+        {
+            chasingPlayer = false;
+            StartCoroutine(PatrolRoutine());
+        }
+    }
+
+    private IEnumerator ChasePlayer()
+    {
+        while (chasingPlayer)
+        {
+            if (playerTransform != null)
+            {
+                MoveToTarget(playerTransform.position);
+            }
+
+            if (Vector2.Distance(transform.position, playerTransform.position) > rayLengthForward &&
+                Vector2.Distance(transform.position, playerTransform.position) > rayLengthBackward)
+            {
+                chasingPlayer = false;
+            }
+
+            yield return null;
+        }
+
+        StartCoroutine(PatrolRoutine());
+    }
+
+    public void TriggerDeath()
     {
         rb.velocity = Vector2.zero;
-    }
-
-    protected virtual void HandleDetection()
-    {
-        Vector2 forwardDirection = isMovingRight ? Vector2.right : Vector2.left;
-        Vector2 backwardDirection = isMovingRight ? Vector2.left : Vector2.right;
-
-        RaycastHit2D hitForward = Physics2D.Raycast(detectionOrigin.position, forwardDirection, detectionRayLength, playerLayer);
-        RaycastHit2D hitBackward = Physics2D.Raycast(detectionOrigin.position, backwardDirection, detectionRayLength, playerLayer);
-
-        Debug.DrawRay(detectionOrigin.position, forwardDirection * detectionRayLength, Color.red);
-        Debug.DrawRay(detectionOrigin.position, backwardDirection * detectionRayLength, Color.blue);
-
-        if ((hitForward.collider != null && hitForward.collider.CompareTag("Player")) ||
-            (hitBackward.collider != null && hitBackward.collider.CompareTag("Player")))
+        if (animator != null)
         {
-            isChasing = true;
+            animator.SetTrigger("Death");
         }
+        StartCoroutine(DestroyAfterAnimation());
     }
 
-    protected virtual void Flip()
+    private IEnumerator DestroyAfterAnimation()
     {
-        isMovingRight = !isMovingRight;
-        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+        yield return new WaitForSeconds(2f); // Время зависит от длительности анимации смерти
+        Destroy(gameObject);
     }
 
-    protected virtual void OnDrawGizmosSelected()
+    private void PlayWalkingAnimation()
     {
-        if (detectionOrigin != null)
+        if (animator != null)
         {
-            Gizmos.color = Color.red;
-            Vector3 forwardDirection = isMovingRight ? Vector3.right : Vector3.left;
-            Gizmos.DrawLine(detectionOrigin.position, detectionOrigin.position + forwardDirection * detectionRayLength);
-
-            Gizmos.color = Color.blue;
-            Vector3 backwardDirection = isMovingRight ? Vector3.left : Vector3.right;
-            Gizmos.DrawLine(detectionOrigin.position, detectionOrigin.position + backwardDirection * detectionRayLength);
+            animator.SetBool("IsWalking", true);
         }
     }
 }

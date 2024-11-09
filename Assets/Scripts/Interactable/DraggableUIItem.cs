@@ -1,11 +1,10 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [SerializeField] private string itemName; // Имя предмета (ID)
+    [SerializeField] private string itemName; // Имя предмета
     private Image itemImage;
     private bool isDraggable = false;
     private Transform originalParent;
@@ -71,12 +70,12 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         if (hit.collider != null)
         {
             DropZone dropZone = hit.collider.GetComponent<DropZone>();
-            if (dropZone != null && dropZone.AcceptsItem(itemName))
+            if (dropZone != null)
             {
-                Debug.Log($"Item {itemName} placed in {dropZone.gameObject.name}");
+                Debug.Log($"Item '{itemName}' placed in {dropZone.gameObject.name}");
 
-                // Удаляем предмет из UI и создаем его в DropZone
-                dropZone.PlaceItem(itemName);
+                // Добавляем предмет в DropZone
+                dropZone.AddItem(itemName);
                 Destroy(gameObject); // Удаляем предмет из UI
                 return;
             }
@@ -86,6 +85,6 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         transform.SetParent(originalParent);
         transform.localPosition = Vector3.zero;
         GetComponent<CanvasGroup>().blocksRaycasts = true;
-        Debug.Log($"Item {itemName} could not be placed and was returned to inventory.");
+        Debug.Log($"Item '{itemName}' could not be placed and was returned to inventory.");
     }
 }
