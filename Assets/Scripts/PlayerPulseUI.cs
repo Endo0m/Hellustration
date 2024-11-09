@@ -8,13 +8,19 @@ public class PlayerPulseUI : MonoBehaviour
     [SerializeField] private Image pulseImage; // UI-изображение, которое будет мигать
     [SerializeField] private float pulseDuration = 0.5f; // Длительность одного мигания
     [SerializeField] private float pulseScale = 1.2f; // Коэффициент масштабирования мигания
-    private float pulseCounter = 100f;
+    [SerializeField] private GameObject overGame;
+    private int pulseCounter = 100;
+    private Coroutine restoreCoroutine;
 
     private Tween currentPulseTween;
 
     private void Update()
     {
         pulseImage.fillAmount = pulseCounter / 100f;
+        if (pulseCounter < 0)
+        {
+            overGame.SetActive(true);
+        }
     }
 
     // Запускает мигание
@@ -55,23 +61,46 @@ public class PlayerPulseUI : MonoBehaviour
     {
         if (pulseCounter > 0)
         {
-            pulseCounter -= 20f;
+            pulseCounter -= 20;
         }
     }
 
     private IEnumerator RestorePulseCounter()
     {
-        float startTime = Time.time;
-        float duration = 10f; // время восстановления
-        float startValue = pulseCounter;
-        float endValue = 100f;
+        int startValue = pulseCounter;
+        int endValue = 100;
 
-        while (Time.time - startTime < duration)
+        while (pulseCounter < endValue)
         {
-            pulseCounter = Mathf.Lerp(startValue, endValue, (Time.time - startTime) / duration);
-            yield return null;
+            pulseCounter = Mathf.Min(endValue, pulseCounter + 1);
+            yield return new WaitForSeconds(1f); // восстановление пульса происходит каждые 0.1 секунды
         }
-
-        pulseCounter = endValue;
     }
+
+    public void PulseDecreaseRun(bool isRunning)
+    {
+        if (isRunning)
+        {
+            InvokeRepeating("DecreasePulseCounterByOne", 1f, 1f); // Уменьшить pulseCounter на 1 каждую секунду
+            if (restoreCoroutine != null)
+            {
+                StopCoroutine(restoreCoroutine);
+                restoreCoroutine = null;
+            }
+        }
+        else
+        {
+            CancelInvoke("DecreasePulseCounterByOne"); // Остановить уменьшение pulseCounter, когда игрок перестает бежать
+            restoreCoroutine = StartCoroutine(RestorePulseCounter()); // Восстановить pulseCounter
+        }
+    }
+
+    private void DecreasePulseCounterByOne()
+    {
+        if (pulseCounter > 0)
+        {
+            pulseCounter -= 5;
+        }
+    }
+
 }
