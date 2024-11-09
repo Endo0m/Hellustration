@@ -4,7 +4,6 @@ using UnityEngine;
 public class TransitionWithCamera : MonoBehaviour
 {
     [SerializeField] private Transform destinationPoint; // Точка назначения для игрока
-    [SerializeField] private float cameraMoveSpeed = 2f; // Скорость перемещения камеры
 
     private Camera mainCamera;
 

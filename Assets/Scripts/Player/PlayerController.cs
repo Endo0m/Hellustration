@@ -70,9 +70,15 @@ public class PlayerController : MonoBehaviour
         Vector3 direction = (mousePosition - transform.position).normalized;
 
         if (direction.x < 0)
+<<<<<<< HEAD
             transform.localScale = new Vector3(-1, 1, 1); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         else if (direction.x > 0)
             transform.localScale = new Vector3(1, 1, 1); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+=======
+            transform.localScale = new Vector3(-2, 2, 2); // Поворот влево
+        else if (direction.x > 0)
+            transform.localScale = new Vector3(2, 2, 2); // Поворот вправо
+>>>>>>> Arthur
     }
 
     private void Interact()

@@ -17,11 +17,14 @@ public class PlayerPulseUI : MonoBehaviour
     private void Update()
     {
         pulseImage.fillAmount = pulseCounter / 100f;
+<<<<<<< HEAD
         Debug.Log(pulseCounter);
         if (pulseCounter < 0)
         {
             overGame.SetActive(true);
         }
+=======
+>>>>>>> Arthur
     }
 
     // Запускает мигание
