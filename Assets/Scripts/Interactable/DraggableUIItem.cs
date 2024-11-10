@@ -72,17 +72,26 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         if (hit.collider != null)
         {
+            // Проверка взаимодействия с ItemModifierZone
+            ItemModifierZone modifierZone = hit.collider.GetComponent<ItemModifierZone>();
+            if (modifierZone != null)
+            {
+                if (modifierZone.TryModifyItem(gameObject, itemName)) // Передаем текущий объект для замены
+                {
+                    Destroy(gameObject); // Удаляем исходный объект после успешной модификации
+                    return;
+                }
+            }
+
+            // Проверка взаимодействия с DropZone (оставляем без изменений)
             DropZone dropZone = hit.collider.GetComponent<DropZone>();
             if (dropZone != null)
             {
-                // Передача имени текущего предмета и имени DropZone
                 if (dropZone.TryCombineWithItem(itemName, dropZone.name))
                 {
                     Destroy(gameObject); // Удаляем исходный объект после успешного комбинирования
                     return;
                 }
-
-                Debug.LogWarning($"Item '{itemName}' could not be combined in {dropZone.gameObject.name}.");
             }
         }
 
@@ -92,5 +101,7 @@ public class DraggableUIItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         GetComponent<CanvasGroup>().blocksRaycasts = true;
         Debug.Log($"Item '{itemName}' was returned to its original position.");
     }
+
+
 
 }

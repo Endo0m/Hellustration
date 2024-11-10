@@ -56,7 +56,6 @@ public class RayCheck : MonoBehaviour
             if (hit.collider.CompareTag("Enemy"))
             {
                 float distanceToEnemy = Vector2.Distance(origin, hit.point);
-                Debug.Log($"Обнаружен враг на расстоянии {distanceToEnemy} единиц.");
                 return true; // Враг найден
             }
             else if (hit.collider.CompareTag("TeleportZone"))
@@ -65,7 +64,6 @@ public class RayCheck : MonoBehaviour
                 if (teleport != null)
                 {
                     Vector2 newOrigin = teleport.GetDestination().position;
-                    Debug.Log("Луч прошел через телепорт. Продолжаем проверку с новой точки.");
                     return CastRayWithTeleportCheck(newOrigin, direction);
                 }
             }

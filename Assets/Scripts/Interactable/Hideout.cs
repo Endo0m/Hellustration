@@ -2,8 +2,13 @@ using UnityEngine;
 
 public class Hideout : MonoBehaviour, IInteractable
 {
-    public void Interact(PlayerController player)
+    public void Interact(GameObject interactor)
     {
-        player.HideInObject(transform);
+        // Проверяем, является ли объект взаимодействия PlayerController
+        PlayerController player = interactor.GetComponent<PlayerController>();
+        if (player != null)
+        {
+            player.HideInObject(transform);
+        }
     }
 }

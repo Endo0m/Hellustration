@@ -3,59 +3,66 @@ using System.Collections;
 
 public class Door : MonoBehaviour, IInteractable
 {
-    [SerializeField] private Animator doorAnimator; // Аниматор для управления анимацией двери
-    [SerializeField] private GameObject transitionTrigger; // Ссылка на триггер для перехода между листами
-    [SerializeField] private float autoCloseDelay = 3f; // Задержка перед автоматическим закрытием двери
-    private bool isOpen = false; // Текущее состояние двери
+    [SerializeField] private Animator doorAnimator;
+    [SerializeField] private GameObject transitionTrigger;
+    [SerializeField] private float autoCloseDelay = 3f;
+    private bool isOpen = false;
 
     private void Start()
     {
         if (transitionTrigger != null)
         {
-            transitionTrigger.SetActive(false); // Отключаем триггер по умолчанию
+            transitionTrigger.SetActive(false);
         }
     }
 
-    public void Interact(PlayerController player)
+    public void Interact(GameObject interactor)
     {
         if (isOpen)
         {
-            CloseDoor(); // Если дверь открыта, закрываем её
+            CloseDoor();
         }
         else
         {
-            OpenDoor(); // Если дверь закрыта, открываем её
+            OpenDoor();
+        }
+
+        // Пример логики взаимодействия на основе объекта
+        if (interactor.CompareTag("Player"))
+        {
+            Debug.Log("Игрок взаимодействует с дверью");
+        }
+        else if (interactor.CompareTag("Enemy"))
+        {
+            Debug.Log("Мясник взаимодействует с дверью");
         }
     }
 
     private void OpenDoor()
     {
         isOpen = true;
-        doorAnimator.SetTrigger("OpenDoor"); // Запускаем анимацию открытия
+        doorAnimator.SetTrigger("OpenDoor");
         if (transitionTrigger != null)
         {
-            transitionTrigger.SetActive(true); // Активируем триггер перехода
+            transitionTrigger.SetActive(true);
         }
-        Debug.Log("Дверь открыта");
 
-        // Запускаем корутину для автоматического закрытия двери
         StartCoroutine(AutoCloseDoor());
     }
 
     private void CloseDoor()
     {
         isOpen = false;
-        doorAnimator.SetTrigger("CloseDoor"); // Запускаем анимацию закрытия
+        doorAnimator.SetTrigger("CloseDoor");
         if (transitionTrigger != null)
         {
-            transitionTrigger.SetActive(false); // Деактивируем триггер перехода
+            transitionTrigger.SetActive(false);
         }
-        Debug.Log("Дверь закрыта");
     }
 
     private IEnumerator AutoCloseDoor()
     {
-        yield return new WaitForSeconds(autoCloseDelay); // Ждём заданное количество секунд
-        CloseDoor(); // Закрываем дверь автоматически
+        yield return new WaitForSeconds(autoCloseDelay);
+        CloseDoor();
     }
 }

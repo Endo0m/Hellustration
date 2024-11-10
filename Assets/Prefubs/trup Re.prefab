@@ -143,4 +143,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f06c8c19203da954a859c083ba24ade8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: 1
+  ItemName: Trup

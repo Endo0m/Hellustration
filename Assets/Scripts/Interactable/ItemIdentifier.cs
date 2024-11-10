@@ -2,7 +2,5 @@ using UnityEngine;
 
 public class ItemIdentifier : MonoBehaviour
 {
-    [SerializeField] private string itemName;
-
-    public string ItemName => itemName;
+    public string ItemName; // ”никальное им€ предмета
 }

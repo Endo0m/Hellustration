@@ -24,7 +24,6 @@ public class PlayerController : MonoBehaviour
     {
         if (isHidden)
         {
-            // �������� �� ����� �� �������
             if (Input.GetKeyDown(KeyCode.E))
             {
                 Reveal();
@@ -32,11 +31,9 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // ���������� ���������
         movement.x = Input.GetAxisRaw("Horizontal");
         RotateToMouse();
 
-        // �������� �� ��������������
         if (Input.GetKeyDown(KeyCode.E))
         {
             Interact();
@@ -47,7 +44,6 @@ public class PlayerController : MonoBehaviour
     {
         if (!isHidden)
         {
-            // ����������� ������� ��������: ���, ���� ������������ Shift
             float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : moveSpeed;
             rb.velocity = new Vector2(movement.x * currentSpeed, rb.velocity.y);
 
@@ -84,7 +80,7 @@ public class PlayerController : MonoBehaviour
             IInteractable interactable = obj.GetComponent<IInteractable>();
             if (interactable != null)
             {
-                interactable.Interact(this); // �������������� � ��������
+                interactable.Interact(gameObject);
                 break;
             }
         }
@@ -96,14 +92,12 @@ public class PlayerController : MonoBehaviour
         transform.position = hideout.position;
         gameObject.layer = LayerMask.NameToLayer("Hidden");
         rb.velocity = Vector2.zero;
-        Debug.Log("����� ���������");
     }
 
     public void Reveal()
     {
         isHidden = false;
         gameObject.layer = LayerMask.NameToLayer("Player");
-        Debug.Log("����� ����� �� �������");
     }
 
     private void OnDrawGizmosSelected()
