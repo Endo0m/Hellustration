@@ -163,10 +163,11 @@ public abstract class EnemyBase : MonoBehaviour
 
             rb.velocity = Vector2.zero;
 
-            if (isMoving)
-            {
-                StartCoroutine(ReturnToLastPosition());
-            }
+            // Восстанавливаем индекс точки маршрута
+            currentWaypointIndex = lastKnownWaypointIndex;
+
+            // Запускаем движение к следующей точке
+            MoveToNextWaypoint();
         }
     }
     private IEnumerator ReturnToLastPosition()
