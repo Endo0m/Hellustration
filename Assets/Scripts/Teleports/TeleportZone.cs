@@ -9,8 +9,21 @@ public class TeleportZone : MonoBehaviour
     {
         if (other.CompareTag("Player") || other.CompareTag("Enemy"))
         {
-            other.transform.position = destinationPoint.position;
-            Debug.Log($"{other.tag} перемещен на новый этаж");
+            // Передаем объект other.gameObject в метод Teleport
+            Teleport(other.gameObject);
+        }
+    }
+
+    public void Teleport(GameObject obj)
+    {
+        // Перемещение объекта
+        if (destinationPoint != null)
+        {
+            obj.transform.position = destinationPoint.position;
+        }
+        else
+        {
+            Debug.LogWarning("Destination Point не задан для TeleportZone.");
         }
     }
 

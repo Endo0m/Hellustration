@@ -34,7 +34,6 @@ public class Door : MonoBehaviour, IInteractable
         }
         else if (interactor.CompareTag("Enemy"))
         {
-            Debug.Log("ћ€сник взаимодействует с дверью");
         }
     }
 
