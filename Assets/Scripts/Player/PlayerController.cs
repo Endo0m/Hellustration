@@ -6,13 +6,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f; // ������� �������� �������� ������
     [SerializeField] private float runSpeed = 8f; // �������� ����
     [SerializeField] private float interactionRadius = 1f; // ������ �������������� � ���������
-    [SerializeField] private PlayerPulseUI playerPulseUI;
+    [SerializeField] private PulseController pulseController;
 
     private Rigidbody2D rb;
     private Vector2 movement;
+    private bool isRunning = false;
     private bool isHidden = false;
-    private bool isRunningFast = false;
-
+    private float lastTime = 0f;
     public bool IsHidden { get { return isHidden; } }
 
     private void Start()
@@ -47,15 +47,18 @@ public class PlayerController : MonoBehaviour
             float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : moveSpeed;
             rb.velocity = new Vector2(movement.x * currentSpeed, rb.velocity.y);
 
-             if (Mathf.Abs(rb.velocity.x) > 6f && !isRunningFast)
+            if (Time.time - lastTime >= 1f)
             {
-                playerPulseUI.PulseDecreaseRun(true);
-                isRunningFast = true;
-            }
-            else if (Mathf.Abs(rb.velocity.x) <= 6f && isRunningFast)
-            {
-                playerPulseUI.PulseDecreaseRun(false);
-                isRunningFast = false;
+                lastTime = Time.time;
+
+                if (rb.velocity.magnitude > 9f)
+                {
+                    pulseController.UpPulseCounter();
+                }
+                else
+                {
+                   pulseController.RestorePulse();
+                }
             }
         }
     }

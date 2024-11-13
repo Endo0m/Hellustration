@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class ClickScreamTrigger : MonoBehaviour
 {
-   [SerializeField] private PlayerPulseUI pulseUI;
+   [SerializeField] private PulseController pulseController;
    [SerializeField] private SpriteRenderer spriteRenderer;
    [SerializeField] private Collider2D colliderr2D;
    
     void OnMouseDown()
     {
-        StartCoroutine(pulseUI.PulseCoroutine());
+        //StartCoroutine(pulseController.PulseCoroutine());
+        pulseController.UpPulseScream();
         spriteRenderer.enabled = false;
         colliderr2D.enabled = false;
     }
