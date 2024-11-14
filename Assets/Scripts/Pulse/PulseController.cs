@@ -21,7 +21,6 @@ public class PulseController : MonoBehaviour
             playerPulseUI.StopPulse();
         }
         textMeshPro.text = pulseCounter.ToString();
-        Debug.Log("Pulse: " + pulseCounter);
         if (pulseCounter > 80)
         {
             playerPulseUI.GameOver();
