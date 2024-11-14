@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class ItemSpawner : MonoBehaviour
 {
@@ -11,13 +11,24 @@ public class ItemSpawner : MonoBehaviour
     private bool useModifiedItem = false; // Флаг, указывающий, использовать ли измененный предмет
 
     private bool hasSpawned = false;
+    private bool hasEnemyPassedFirstWaypoint = false; // Флаг, указывающий, прошел ли враг первую точку
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Enemy") && !hasSpawned)
+        if (other.CompareTag("Enemy"))
         {
-            StartCoroutine(SpawnItemsSequentially());
+            // Проверяем, что враг прошел первую точку
+            if (hasEnemyPassedFirstWaypoint && !hasSpawned)
+            {
+                StartCoroutine(SpawnItemsSequentially());
+            }
         }
+    }
+
+    // Этот метод вызывается из EnemyBase, чтобы отметить, что враг прошел первую точку
+    public void MarkEnemyPassedFirstWaypoint()
+    {
+        hasEnemyPassedFirstWaypoint = true;
     }
 
     public void SetModifiedItem(GameObject newPrefab)

@@ -203,10 +203,20 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
-    private IEnumerator HandleWaypointActions()
+    protected IEnumerator HandleWaypointActions()
     {
         isMoving = false;
         WaypointData currentData = waypoints[currentWaypointIndex];
+
+        // Проверка, достиг ли враг первой точки
+        if (currentWaypointIndex == 0)
+        {
+            ItemSpawner spawner = FindObjectOfType<ItemSpawner>(); // Находим спавнер
+            if (spawner != null)
+            {
+                spawner.MarkEnemyPassedFirstWaypoint(); // Сообщаем спавнеру, что враг прошел первую точку
+            }
+        }
 
         if (currentData.enableParticles && actionParticles != null)
         {
@@ -237,6 +247,7 @@ public abstract class EnemyBase : MonoBehaviour
         // Запускаем движение к следующей точке
         MoveToNextWaypoint();
     }
+
 
     protected void MoveToNextWaypoint()
     {

@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float runSpeed = 8f; // Скорость бега
     [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
     [SerializeField] private PulseController pulseController;
-
+    private float scale = 1.5f;
     private Rigidbody2D rb;
     private Vector2 movement;
     private bool isRunning = false;
@@ -68,9 +68,9 @@ public class PlayerController : MonoBehaviour
         Vector3 direction = (mousePosition - transform.position).normalized;
 
         if (direction.x < 0)
-            transform.localScale = new Vector3(-2, 2, 2); // Поворот влево
+            transform.localScale = new Vector3(-scale, scale, scale); // Поворот влево
         else if (direction.x > 0)
-            transform.localScale = new Vector3(2, 2, 2); // Поворот вправо
+            transform.localScale = new Vector3(scale, scale, scale); // Поворот вправо
     }
 
     private void Interact()
