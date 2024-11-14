@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour
             {
                 lastTime = Time.time;
 
-                if (rb.velocity.magnitude > 9f)
+                if (rb.velocity.magnitude > 3f)
                 {
                     pulseController.UpPulseCounter();
                 }
