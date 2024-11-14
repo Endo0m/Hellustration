@@ -11,7 +11,6 @@ public struct Sound
 public class SoundManager : MonoBehaviour
 {
     [SerializeField] private Sound[] sounds; // Массив звуков
-    private AudioSource audioSource; // Источник для воспроизведения звуков
 
     // Singleton для удобного доступа
     public static SoundManager Instance { get; private set; }
@@ -28,8 +27,6 @@ public class SoundManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);  // Сохраняем объект между сценами
         }
-
-        audioSource = GetComponent<AudioSource>();
     }
 
     // Метод для вызова звука по имени
@@ -39,7 +36,16 @@ public class SoundManager : MonoBehaviour
 
         if (sound.clip != null)
         {
-            audioSource.PlayOneShot(sound.clip); // Воспроизведение звука
+            // Создание нового GameObject для аудио источника
+            GameObject soundGameObject = new GameObject("AudioSource_" + soundName);
+            AudioSource newAudioSource = soundGameObject.AddComponent<AudioSource>();
+
+            // Устанавливаем настройки источника и проигрываем звук
+            newAudioSource.clip = sound.clip;
+            newAudioSource.Play();
+
+            // Удаляем объект после окончания воспроизведения звука
+            Destroy(soundGameObject, sound.clip.length);
         }
         else
         {
