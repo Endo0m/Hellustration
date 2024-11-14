@@ -12,6 +12,12 @@ public class RayCheck : MonoBehaviour
     private bool isFacingRight = true; // Определение текущего направления игрока
     private float nextCheckTime; // Время следующей проверки
     private bool enemyDetected = false; // Флаг обнаружения врага
+    private PlayerController playerController; // Ссылка на контроллер игрока
+
+    private void Start()
+    {
+        playerController = GetComponent<PlayerController>(); // Получаем ссылку на контроллер игрока
+    }
 
     private void Update()
     {
@@ -46,20 +52,28 @@ public class RayCheck : MonoBehaviour
 
     private bool CastRayWithTeleportCheck(Vector2 origin, Vector2 direction)
     {
-        
+        // Проверяем, не скрыт ли игрок
+        if (playerController.IsHidden)
+        {
+            Debug.Log("Игрок скрыт, не виден для врагов.");
+            return false; // Игрок скрыт, и его не видно через луч
+        }
 
         RaycastHit2D hit = Physics2D.Raycast(origin, direction, rayDistance, enemyLayer | teleportLayer);
         Debug.DrawRay(origin, direction * rayDistance, rayColor); // Визуализация луча
 
         if (hit.collider != null)
         {
+            Debug.Log("Луч пересекся с объектом: " + hit.collider.name); // Дебаг, показываем имя объекта, с которым пересекся луч
+
             if (hit.collider.CompareTag("Enemy"))
             {
-                float distanceToEnemy = Vector2.Distance(origin, hit.point);
+                Debug.Log("Враг обнаружен!");
                 return true; // Враг найден
             }
             else if (hit.collider.CompareTag("TeleportZone"))
             {
+                Debug.Log("Телепортная зона обнаружена.");
                 TeleportZone teleport = hit.collider.GetComponent<TeleportZone>();
                 if (teleport != null)
                 {
@@ -68,6 +82,11 @@ public class RayCheck : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            Debug.Log("Луч не встретил никаких объектов.");
+        }
+
         return false; // Враг не найден
     }
 
@@ -82,5 +101,16 @@ public class RayCheck : MonoBehaviour
         {
             isFacingRight = false;
         }
+    }
+
+    // Отображение луча и информации в редакторе через Gizmos
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = rayColor;
+        Gizmos.DrawLine(transform.position, transform.position + (isFacingRight ? Vector3.right : Vector3.left) * rayDistance); // Рисуем луч
+
+        // Опционально, можно добавить дополнительную информацию
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position + (isFacingRight ? Vector3.right : Vector3.left) * rayDistance, 0.2f); // Конец луча
     }
 }

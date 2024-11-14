@@ -1,11 +1,10 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f; // ������� �������� �������� ������
-    [SerializeField] private float runSpeed = 8f; // �������� ����
-    [SerializeField] private float interactionRadius = 1f; // ������ �������������� � ���������
+    [SerializeField] private float moveSpeed = 5f; // Скорость движения игрока
+    [SerializeField] private float runSpeed = 8f; // Скорость бега
+    [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
     [SerializeField] private PulseController pulseController;
 
     private Rigidbody2D rb;
@@ -57,7 +56,7 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                   pulseController.RestorePulse();
+                    pulseController.RestorePulse();
                 }
             }
         }
@@ -69,14 +68,14 @@ public class PlayerController : MonoBehaviour
         Vector3 direction = (mousePosition - transform.position).normalized;
 
         if (direction.x < 0)
-            transform.localScale = new Vector3(-2, 2, 2); // ������� �����
+            transform.localScale = new Vector3(-2, 2, 2); // Поворот влево
         else if (direction.x > 0)
-            transform.localScale = new Vector3(2, 2, 2); // ������� ������
+            transform.localScale = new Vector3(2, 2, 2); // Поворот вправо
     }
 
     private void Interact()
     {
-        // ����� �������� ��� �������������� � �������
+        // Проверка на взаимодействие с объектами в радиусе
         Collider2D[] interactables = Physics2D.OverlapCircleAll(transform.position, interactionRadius);
         foreach (var obj in interactables)
         {
@@ -93,14 +92,32 @@ public class PlayerController : MonoBehaviour
     {
         isHidden = true;
         transform.position = hideout.position;
-        gameObject.layer = LayerMask.NameToLayer("Hidden");
+        gameObject.layer = LayerMask.NameToLayer("Hidden"); // Меняем слой на "Hidden"
         rb.velocity = Vector2.zero;
+
+        // Замораживаем физику (Kinematic)
+        rb.isKinematic = true;
+
+        // Изменяем ордер слоя (например, на -3)
+        Renderer renderer = GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.sortingOrder = -3; // Остановим взаимодействие с физикой
+        }
     }
 
     public void Reveal()
     {
         isHidden = false;
-        gameObject.layer = LayerMask.NameToLayer("Player");
+        gameObject.layer = LayerMask.NameToLayer("Player"); // Возвращаем слой обратно на "Player"
+        rb.isKinematic = false; // Возвращаем физику
+
+        // Восстанавливаем ордер слоя в нормальное положение (например, на 0)
+        Renderer renderer = GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.sortingOrder = 0; // Восстанавливаем ордер слоя
+        }
     }
 
     private void OnDrawGizmosSelected()
