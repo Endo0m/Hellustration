@@ -1,55 +1,59 @@
+using System.Collections.Generic;
 using UnityEngine;
-
-// Структура для хранения имени и звука
-[System.Serializable]
-public struct Sound
-{
-    public string name;  // Имя звука
-    public AudioClip clip; // Ссылка на аудиофайл
-}
 
 public class SoundManager : MonoBehaviour
 {
-    [SerializeField] private Sound[] sounds; // Массив звуков
+    // Структура для хранения ключа и аудиоклипа
+    [System.Serializable]
+    public struct Sound
+    {
+        public string key; // Имя ключа
+        public AudioClip clip; // Аудиоклип
+    }
 
-    // Singleton для удобного доступа
-    public static SoundManager Instance { get; private set; }
+    public List<Sound> sounds; // Список всех звуков
+
+    // Словарь для быстрого поиска по ключу
+    private Dictionary<string, AudioClip> soundDictionary;
 
     private void Awake()
     {
-        // Убедимся, что у нас только один экземпляр SoundManager
-        if (Instance != null)
+        // Инициализация словаря
+        soundDictionary = new Dictionary<string, AudioClip>();
+        foreach (Sound sound in sounds)
         {
-            Destroy(gameObject);
-        }
-        else
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);  // Сохраняем объект между сценами
+            if (!soundDictionary.ContainsKey(sound.key))
+            {
+                soundDictionary.Add(sound.key, sound.clip);
+            }
+            else
+            {
+                Debug.LogWarning($"Звук с ключом '{sound.key}' уже существует в словаре.");
+            }
         }
     }
 
-    // Метод для вызова звука по имени
-    public void PlaySound(string soundName)
+    // Метод для получения аудиоклипа по ключу
+    public AudioClip GetAudioClip(string key)
     {
-        Sound sound = System.Array.Find(sounds, s => s.name == soundName);
-
-        if (sound.clip != null)
+        if (soundDictionary.TryGetValue(key, out AudioClip clip))
         {
-            // Создание нового GameObject для аудио источника
-            GameObject soundGameObject = new GameObject("AudioSource_" + soundName);
-            AudioSource newAudioSource = soundGameObject.AddComponent<AudioSource>();
-
-            // Устанавливаем настройки источника и проигрываем звук
-            newAudioSource.clip = sound.clip;
-            newAudioSource.Play();
-
-            // Удаляем объект после окончания воспроизведения звука
-            Destroy(soundGameObject, sound.clip.length);
+            return clip;
         }
         else
         {
-            Debug.LogWarning("Sound not found: " + soundName);
+            Debug.LogWarning($"Аудиоклип с ключом '{key}' не найден.");
+            return null;
+        }
+    }
+
+    // Метод для воспроизведения аудиоклипа через переданный AudioSource
+    public void PlaySound(string key, AudioSource audioSource)
+    {
+        AudioClip clip = GetAudioClip(key);
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 }

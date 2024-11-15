@@ -13,10 +13,19 @@ public class PlayerController : MonoBehaviour
     private bool isHidden = false;
     private float lastTime = 0f;
     public bool IsHidden { get { return isHidden; } }
-
+    private SoundManager soundManager;
+    private AudioSource audioSource;
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        soundManager = FindObjectOfType<SoundManager>();
+        audioSource = GetComponent<AudioSource>();
+
+        if (audioSource == null)
+        {
+            // Добавление компонента AudioSource, если его нет
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     private void Update()
@@ -29,7 +38,12 @@ public class PlayerController : MonoBehaviour
             }
             return;
         }
-
+        // Проверка на движение игрока
+        if (movement != Vector2.zero && !audioSource.isPlaying)
+        {
+            // Воспроизведение звука шагов, если игрок движется
+            soundManager?.PlaySound("footstep", audioSource);
+        }
         movement.x = Input.GetAxisRaw("Horizontal");
         RotateToMouse();
 
@@ -50,7 +64,7 @@ public class PlayerController : MonoBehaviour
             {
                 lastTime = Time.time;
 
-                if (rb.velocity.magnitude > 3f)
+                if (rb.velocity.magnitude > 9f)
                 {
                     pulseController.UpPulseCounter();
                 }
