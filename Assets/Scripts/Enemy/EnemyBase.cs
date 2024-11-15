@@ -25,7 +25,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected Transform playerTransform;
     protected SpriteRenderer spriteRenderer;
     protected Vector2 facingDirection;
-
+    public int CurrentWaypoint { get; private set; }
     [System.Serializable]
     public struct WaypointData
     {
@@ -44,6 +44,11 @@ public abstract class EnemyBase : MonoBehaviour
         {
             MoveToNextWaypoint();
         }
+    }
+    public void UpdateWaypoint(int waypoint)
+    {
+        CurrentWaypoint = waypoint;
+        Debug.Log($"Waypoint updated to: {CurrentWaypoint}");
     }
 
     protected virtual void Update()
@@ -208,15 +213,7 @@ public abstract class EnemyBase : MonoBehaviour
         isMoving = false;
         WaypointData currentData = waypoints[currentWaypointIndex];
 
-        // Проверка, достиг ли враг первой точки
-        if (currentWaypointIndex == 0)
-        {
-            ItemSpawner spawner = FindObjectOfType<ItemSpawner>(); // Находим спавнер
-            if (spawner != null)
-            {
-                spawner.MarkEnemyPassedFirstWaypoint(); // Сообщаем спавнеру, что враг прошел первую точку
-            }
-        }
+        
 
         if (currentData.enableParticles && actionParticles != null)
         {
@@ -270,6 +267,7 @@ public abstract class EnemyBase : MonoBehaviour
         {
             rb.velocity = Vector2.zero;
             animator.SetBool("IsWalking", false);
+            UpdateWaypoint(currentWaypointIndex);
             StartCoroutine(HandleWaypointActions());
         }
     }

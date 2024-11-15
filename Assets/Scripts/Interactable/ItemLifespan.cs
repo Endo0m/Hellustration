@@ -2,30 +2,42 @@ using UnityEngine;
 
 public class ItemLifespan : MonoBehaviour
 {
-    public float lifespan = 5f; // Время жизни предмета в секундах
-    private bool isDestroyed = false; // Флаг для предотвращения повторного уничтожения
+    public float lifespan = -1f; // Время жизни предмета (-1 означает, что предмет не исчезает по времени)
+    private bool isDestroyed = false; // Флаг, предотвращающий повторное уничтожение
+    public int requiredWaypoint = 1; // Точка, которую враг должен пройти для уничтожения предмета
 
     private void Start()
     {
-        // Запуск таймера для уничтожения объекта
-        Invoke(nameof(DestroyItem), lifespan);
+        // Если lifespan больше 0, запускаем таймер на уничтожение
+        if (lifespan > 0)
+        {
+            Invoke(nameof(DestroyItem), lifespan);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Проверка на вхождение врага в триггерный коллайдер
         if (!isDestroyed && other.CompareTag("Enemy"))
         {
-            DestroyItem();
+            EnemyBase enemyBase = other.GetComponent<EnemyBase>();
+            if (enemyBase != null)
+            {
+                Debug.Log($"Enemy reached waypoint {enemyBase.CurrentWaypoint}. Required waypoint: {requiredWaypoint}");
+                if (enemyBase.CurrentWaypoint >= requiredWaypoint)
+                {
+                    DestroyItem();
+                }
+            }
         }
     }
+
 
     private void DestroyItem()
     {
         if (!isDestroyed)
         {
             Destroy(gameObject);
-            isDestroyed = true; // Установка флага для предотвращения повторного уничтожения
+            isDestroyed = true;
         }
     }
 }
