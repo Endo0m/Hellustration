@@ -56,6 +56,12 @@ public class InteractionController : MonoBehaviour
                 wobbleObject.Interact(gameObject);
                 return;
             }
+            Box box = hit.collider.GetComponent<Box>();
+            if (box != null)
+            {
+                box.Interact(gameObject);
+                return;
+            }
 
             // Проверка на IInteractable (общее взаимодействие)
             IInteractable interactable = hit.collider.GetComponent<IInteractable>();
