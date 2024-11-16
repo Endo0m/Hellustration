@@ -8071,7 +8071,8 @@ MonoBehaviour:
   hideLayer:
     serializedVersion: 2
     m_Bits: 512
-  timeUntilAggressive: 180
+  minTimeUntilAggressive: 180
+  maxTimeUntilAggressive: 300
   stepSoundInterval: 0.5
   backRayLength: 5
   frontRayLength: 8
@@ -15352,7 +15353,7 @@ MonoBehaviour:
   spawnPoint: {fileID: 1642170574}
   spawnCooldown: 65
   timeUntilNextItem: 10
-  requiredWaypointForSpawn: 0
+  requiredWaypointForSpawn: 1
 --- !u!1 &1696594487
 GameObject:
   m_ObjectHideFlags: 0
