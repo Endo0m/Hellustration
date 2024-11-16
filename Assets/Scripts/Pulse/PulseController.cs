@@ -27,20 +27,18 @@ public class PulseController : MonoBehaviour
         }
     }
 
-    // public IEnumerator PulseCoroutine()
-    // {
-    //     //DecreasePulseCounterr();
-    //     playerPulseUI.StartPulse();
-    //     yield return new WaitForSeconds(5f); // ждем 5 секунд
-    //     playerPulseUI.StopPulse();
-    // }
-
-    public void RestorePulse()
+    private IEnumerator PulseCoroutine()
     {
+        yield return new WaitForSeconds(5f); 
         if (pulseCounter > 60)
         {
             pulseCounter -= 1;
         }
+    }
+
+    public void RestorePulse()
+    {
+        StartCoroutine(PulseCoroutine());
     }
 
     public void UpPulseCounter()
