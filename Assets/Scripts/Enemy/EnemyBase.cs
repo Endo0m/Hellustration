@@ -14,7 +14,9 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected LayerMask playerLayer;
     [SerializeField] protected LayerMask hideLayer;
 
-    [SerializeField] protected float timeUntilAggressive = 60f;
+
+    [SerializeField] protected float minTimeUntilAggressive = 180f; // Минимальное время (3 минуты)
+    [SerializeField] protected float maxTimeUntilAggressive = 300f; // Максимальное время (5 минут)
     protected float aggressiveTimer;
     protected bool isAggressiveMode = false;
     protected AudioSource audioSource;
@@ -64,7 +66,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
         soundManager = FindObjectOfType<SoundManager>();
 
-        aggressiveTimer = timeUntilAggressive;
+        InitializeAggressiveTimer();
         if (waypoints.Length > 0)
         {
             MoveToNextWaypoint();
@@ -118,6 +120,10 @@ public abstract class EnemyBase : MonoBehaviour
             CheckPlayerDetection();
         }
         UpdateFacingDirection();
+    }
+    protected virtual void InitializeAggressiveTimer()
+    {
+        aggressiveTimer = Random.Range(minTimeUntilAggressive, maxTimeUntilAggressive);
     }
     protected void CheckFootsteps()
     {
