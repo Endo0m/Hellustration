@@ -1,10 +1,5 @@
 fileFormatVersion: 2
-<<<<<<<< HEAD:Assets/Scenes/Game.unity.meta
-guid: 9d6f10385201f6a4b94863d9a6884fd7
-========
-guid: 32fc9a534a7fd54479c96aa3f5fe195c
-folderAsset: yes
->>>>>>>> Nick:Assets/Scripts/Shadow.meta
+guid: a2207eafe0c384440ac5c2fadf31ed35
 DefaultImporter:
   externalObjects: {}
   userData: 
