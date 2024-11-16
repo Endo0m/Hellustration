@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float runSpeed = 8f; // Скорость бега
     [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
     [SerializeField] private PulseController pulseController;
-    private float scale = 1.5f;
+    private float scale = 1f;
     private Rigidbody2D rb;
     private Vector2 movement;
     private bool isRunning = false;
