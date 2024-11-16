@@ -8,12 +8,16 @@ public abstract class EnemyBase : MonoBehaviour
     protected Animator animator;
     [SerializeField] protected WaypointData[] waypoints;
     [SerializeField] protected float moveSpeed = 2f;
-    [SerializeField] protected float chaseSpeed = 4f; // Скорость преследования
+    [SerializeField] protected float chaseSpeed = 4f;
+    [SerializeField] protected float aggressiveChaseSpeed = 6f;
     [SerializeField] protected ParticleSystem actionParticles;
-    [SerializeField] protected LayerMask playerLayer; // Слой игрока
-    [SerializeField] protected LayerMask hideLayer; // Слой, где игрок может прятаться
+    [SerializeField] protected LayerMask playerLayer;
+    [SerializeField] protected LayerMask hideLayer;
 
-    // Параметры лучей
+    [SerializeField] protected float timeUntilAggressive = 60f;
+    protected float aggressiveTimer;
+    protected bool isAggressiveMode = false;
+
     [SerializeField] protected float backRayLength = 5f;
     [SerializeField] protected float frontRayLength = 8f;
     [SerializeField] protected float extendedFrontRayLength = 12f;
@@ -25,7 +29,15 @@ public abstract class EnemyBase : MonoBehaviour
     protected Transform playerTransform;
     protected SpriteRenderer spriteRenderer;
     protected Vector2 facingDirection;
+    [SerializeField] private float teleportSearchThresholdY = 3f; // Пороговое значение разницы по Y для поиска телепорта
+    [SerializeField] private float teleportReachDistance = 0.5f; // Расстояние, на котором считается, что враг достиг телепорта
+    [SerializeField] private float teleportCooldown = 2f; // Кулдаун между использованиями телепортов
+    private float lastTeleportTime;
+    private TeleportZone currentTargetTeleport;
+    private bool isMovingToTeleport = false;
+
     public int CurrentWaypoint { get; private set; }
+
     [System.Serializable]
     public struct WaypointData
     {
@@ -40,11 +52,13 @@ public abstract class EnemyBase : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        aggressiveTimer = timeUntilAggressive;
         if (waypoints.Length > 0)
         {
             MoveToNextWaypoint();
         }
     }
+
     public void UpdateWaypoint(int waypoint)
     {
         CurrentWaypoint = waypoint;
@@ -53,17 +67,62 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void Update()
     {
-        if (!isChasing && isMoving && currentWaypointIndex < waypoints.Length)
+        if (!isAggressiveMode)
         {
-            MoveTowardsWaypoint();
-        }
-        else if (isChasing && playerTransform != null)
-        {
-            ChasePlayer();
+            aggressiveTimer -= Time.deltaTime;
+            if (aggressiveTimer <= 0)
+            {
+                EnableAggressiveMode();
+            }
         }
 
-        CheckPlayerDetection();
+        if (isAggressiveMode)
+        {
+            if (!isChasing)
+            {
+                FindAndChasePlayer();
+            }
+            else if (playerTransform != null)
+            {
+                HandleChasingLogic();
+            }
+        }
+        else
+        {
+            if (!isChasing && isMoving && currentWaypointIndex < waypoints.Length)
+            {
+                MoveTowardsWaypoint();
+            }
+            else if (isChasing && playerTransform != null)
+            {
+                HandleChasingLogic();
+            }
+        }
+
+        if (!isAggressiveMode)
+        {
+            CheckPlayerDetection();
+        }
         UpdateFacingDirection();
+    }
+
+    protected void EnableAggressiveMode()
+    {
+        isAggressiveMode = true;
+        isMoving = false;
+        StopAllCoroutines();
+        animator.SetBool("IsChasing", true);
+        animator.SetBool("IsWalking", false);
+        animator.SetBool("IsActing", false);
+    }
+
+    protected void FindAndChasePlayer()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            StartChasing(player.transform);
+        }
     }
 
     protected void UpdateFacingDirection()
@@ -77,29 +136,25 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected void CheckPlayerDetection()
     {
-        // Направление взгляда врага
         float direction = spriteRenderer.flipX ? -1 : 1;
         Vector2 position = transform.position;
 
-        // Отрисовка лучей для отладки
         Debug.DrawRay(position, Vector2.right * direction * (isChasing ? extendedFrontRayLength : frontRayLength), Color.red);
         Debug.DrawRay(position, Vector2.right * -direction * backRayLength, Color.blue);
 
-        // Проверка переднего луча
         RaycastHit2D frontHit = Physics2D.Raycast(position, Vector2.right * direction,
             isChasing ? extendedFrontRayLength : frontRayLength, playerLayer | hideLayer);
 
-        // Проверка заднего луча
         RaycastHit2D backHit = Physics2D.Raycast(position, Vector2.right * -direction,
             backRayLength, playerLayer | hideLayer);
 
         HandlePlayerDetection(frontHit, backHit);
     }
+
     protected void HandlePlayerDetection(RaycastHit2D frontHit, RaycastHit2D backHit)
     {
         if (!isChasing)
         {
-            // Начинаем погоню только если обнаружили игрока на нужном слое
             if ((frontHit.collider != null || backHit.collider != null) &&
                 ((frontHit.collider?.gameObject.layer == LayerMask.NameToLayer("Player")) ||
                  (backHit.collider?.gameObject.layer == LayerMask.NameToLayer("Player"))))
@@ -107,9 +162,8 @@ public abstract class EnemyBase : MonoBehaviour
                 StartChasing(frontHit.collider != null ? frontHit.collider.transform : backHit.collider.transform);
             }
         }
-        else
+        else if (!isAggressiveMode)
         {
-            // Проверяем, виден ли все еще игрок
             bool playerVisible = false;
 
             if (frontHit.collider != null && frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
@@ -117,7 +171,6 @@ public abstract class EnemyBase : MonoBehaviour
             if (backHit.collider != null && backHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
                 playerVisible = true;
 
-            // Если игрок не виден или находится в слое Hide, прекращаем погоню
             if (!playerVisible ||
                 (frontHit.collider?.gameObject.layer == LayerMask.NameToLayer("Hidden") ||
                  backHit.collider?.gameObject.layer == LayerMask.NameToLayer("Hidden")))
@@ -136,11 +189,94 @@ public abstract class EnemyBase : MonoBehaviour
             lastWaypointPosition = transform.position;
             lastKnownWaypointIndex = currentWaypointIndex;
 
-            // Отключаем анимацию ходьбы и включаем анимацию погони
             animator.SetBool("IsWalking", false);
             animator.SetBool("IsChasing", true);
 
-            StopAllCoroutines();
+            if (!isAggressiveMode)
+            {
+                StopAllCoroutines();
+            }
+        }
+    }
+
+    protected void HandleChasingLogic()
+    {
+        if (playerTransform != null)
+        {
+            float yDifference = Mathf.Abs(playerTransform.position.y - transform.position.y);
+
+            if (yDifference > teleportSearchThresholdY)
+            {
+                if (!isMovingToTeleport)
+                {
+                    SearchForTeleport();
+                }
+                else if (currentTargetTeleport != null)
+                {
+                    MoveToTeleport();
+                }
+            }
+            else
+            {
+                isMovingToTeleport = false;
+                currentTargetTeleport = null;
+                ChasePlayer();
+            }
+        }
+    }
+
+    protected void SearchForTeleport()
+    {
+        if (Time.time - lastTeleportTime < teleportCooldown) return;
+
+        TeleportZone[] teleports = FindObjectsOfType<TeleportZone>();
+        float playerY = playerTransform.position.y;
+
+        TeleportZone bestTeleport = null;
+        float bestScore = float.MaxValue;
+
+        foreach (var teleport in teleports)
+        {
+            if (teleport.GetDestination() == null) continue;
+
+            // Проверяем, приближает ли нас телепорт к игроку по Y
+            float currentYDiff = Mathf.Abs(transform.position.y - playerY);
+            float afterTeleportYDiff = Mathf.Abs(teleport.GetDestination().position.y - playerY);
+
+            if (afterTeleportYDiff < currentYDiff)
+            {
+                float distanceToTeleport = Vector2.Distance(transform.position, teleport.transform.position);
+                float score = distanceToTeleport + afterTeleportYDiff;
+
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestTeleport = teleport;
+                }
+            }
+        }
+
+        if (bestTeleport != null)
+        {
+            currentTargetTeleport = bestTeleport;
+            isMovingToTeleport = true;
+        }
+    }
+
+    protected void MoveToTeleport()
+    {
+        if (currentTargetTeleport == null) return;
+
+        Vector2 directionToTeleport = (currentTargetTeleport.transform.position - transform.position).normalized;
+        rb.velocity = directionToTeleport * moveSpeed;
+
+        // Проверяем, достигли ли телепорта
+        if (Vector2.Distance(transform.position, currentTargetTeleport.transform.position) < teleportReachDistance)
+        {
+            lastTeleportTime = Time.time;
+            currentTargetTeleport.Teleport(gameObject);
+            isMovingToTeleport = false;
+            currentTargetTeleport = null;
         }
     }
 
@@ -148,33 +284,44 @@ public abstract class EnemyBase : MonoBehaviour
     {
         if (playerTransform != null)
         {
-            Vector2 direction = (playerTransform.position - transform.position).normalized;
-            rb.velocity = direction * chaseSpeed;
-            // Убираем установку IsWalking в true во время погони
-            // animator.SetBool("IsWalking", true); - эту строку удаляем
+            Vector2 directionToPlayer = playerTransform.position - transform.position;
+            // Ограничиваем движение по Y, если не используем телепорт
+            if (!isMovingToTeleport && Mathf.Abs(directionToPlayer.y) > teleportSearchThresholdY)
+            {
+                directionToPlayer.y = 0;
+            }
+
+            rb.velocity = directionToPlayer.normalized * (isAggressiveMode ? aggressiveChaseSpeed : chaseSpeed);
         }
     }
 
+    protected void MoveToPosition(Vector3 targetPosition)
+    {
+        Vector2 direction = (targetPosition - transform.position).normalized;
+        rb.velocity = direction * moveSpeed;
+        animator.SetBool("IsWalking", true);
+    }
+
+  
+
     protected void StopChasing()
     {
-        if (isChasing)
+        if (isChasing && !isAggressiveMode)
         {
             isChasing = false;
             playerTransform = null;
 
-            // Сбрасываем обе анимации
             animator.SetBool("IsChasing", false);
             animator.SetBool("IsWalking", false);
 
             rb.velocity = Vector2.zero;
 
-            // Восстанавливаем индекс точки маршрута
             currentWaypointIndex = lastKnownWaypointIndex;
 
-            // Запускаем движение к следующей точке
             MoveToNextWaypoint();
         }
     }
+
     private IEnumerator ReturnToLastPosition()
     {
         Vector2 returnPosition = waypoints[lastKnownWaypointIndex].point.position;
@@ -190,30 +337,25 @@ public abstract class EnemyBase : MonoBehaviour
         rb.velocity = Vector2.zero;
         animator.SetBool("IsWalking", false);
 
-        // Восстанавливаем индекс точки маршрута
         currentWaypointIndex = lastKnownWaypointIndex;
 
-        // Проверяем, были ли прерваны какие-то действия на точке
         WaypointData currentData = waypoints[currentWaypointIndex];
         if (Vector2.Distance(transform.position, currentData.point.position) < 0.1f)
         {
-            // Если мы вернулись точно на точку, выполняем действия и идем дальше
             StartCoroutine(HandleWaypointActions());
         }
         else
         {
-            // Если мы не точно на точке, просто продолжаем движение к ней
             isMoving = true;
-            // НЕ увеличиваем currentWaypointIndex, продолжаем идти к текущей точке
         }
     }
 
     protected IEnumerator HandleWaypointActions()
     {
+        if (isAggressiveMode) yield break;
+
         isMoving = false;
         WaypointData currentData = waypoints[currentWaypointIndex];
-
-        
 
         if (currentData.enableParticles && actionParticles != null)
         {
@@ -238,17 +380,14 @@ public abstract class EnemyBase : MonoBehaviour
             }
         }
 
-        // Переходим к следующей точке
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
 
-        // Запускаем движение к следующей точке
         MoveToNextWaypoint();
     }
 
-
     protected void MoveToNextWaypoint()
     {
-        if (currentWaypointIndex < waypoints.Length)
+        if (!isAggressiveMode && currentWaypointIndex < waypoints.Length)
         {
             isMoving = true;
         }
@@ -256,7 +395,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected void MoveTowardsWaypoint()
     {
-        if (currentWaypointIndex >= waypoints.Length) return;
+        if (currentWaypointIndex >= waypoints.Length || isAggressiveMode) return;
 
         Transform targetPoint = waypoints[currentWaypointIndex].point;
         Vector2 direction = (targetPoint.position - transform.position).normalized;
@@ -271,33 +410,30 @@ public abstract class EnemyBase : MonoBehaviour
             StartCoroutine(HandleWaypointActions());
         }
     }
-    protected abstract void CheckIfDefeated();
 
+    protected abstract void CheckIfDefeated();
 
     public void Teleport(Vector3 destination)
     {
         transform.position = destination;
     }
+
     private void OnDrawGizmos()
     {
-        // Направление взгляда врага (если есть SpriteRenderer)
         float direction = (spriteRenderer != null && spriteRenderer.flipX) ? -1 : 1;
         Vector2 position = transform.position;
 
-        // Цвета для лучей
         Color frontRayColor = Color.red;
         Color backRayColor = Color.blue;
-        frontRayColor.a = 0.5f; // Полупрозрачный
+        frontRayColor.a = 0.5f;
         backRayColor.a = 0.5f;
 
-        // Рисуем передний луч
         Gizmos.color = frontRayColor;
         float currentFrontLength = isChasing ? extendedFrontRayLength : frontRayLength;
-        Gizmos.DrawWireSphere(position, 0.2f); // Точка начала луча
+        Gizmos.DrawWireSphere(position, 0.2f);
         Gizmos.DrawLine(position, position + new Vector2(direction * currentFrontLength, 0));
         Gizmos.DrawWireSphere(position + new Vector2(direction * currentFrontLength, 0), 0.2f);
 
-        // Рисуем задний луч
         Gizmos.color = backRayColor;
         Gizmos.DrawLine(position, position + new Vector2(-direction * backRayLength, 0));
         Gizmos.DrawWireSphere(position + new Vector2(-direction * backRayLength, 0), 0.2f);
