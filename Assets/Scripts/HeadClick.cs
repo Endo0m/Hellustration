@@ -14,7 +14,7 @@ public class HeadClick : MonoBehaviour
         if (!isClicked)
         {
             clickScreamTrigger.PulseActive();
-            head.gravityScale = 1;
+            head.gravityScale = 6;
             head.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
             isClicked = true;
         }
