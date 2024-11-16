@@ -17,7 +17,10 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected float timeUntilAggressive = 60f;
     protected float aggressiveTimer;
     protected bool isAggressiveMode = false;
-
+    protected AudioSource audioSource;
+    protected SoundManager soundManager;
+    [SerializeField] protected float stepSoundInterval = 0.5f; // »нтервал между звуками шагов
+    protected float lastStepTime;
     [SerializeField] protected float backRayLength = 5f;
     [SerializeField] protected float frontRayLength = 8f;
     [SerializeField] protected float extendedFrontRayLength = 12f;
@@ -52,11 +55,21 @@ public abstract class EnemyBase : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // ƒобавл€ем инициализацию звука
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        soundManager = FindObjectOfType<SoundManager>();
+
         aggressiveTimer = timeUntilAggressive;
         if (waypoints.Length > 0)
         {
             MoveToNextWaypoint();
         }
+        audioSource.spatialBlend = 1;
     }
 
     public void UpdateWaypoint(int waypoint)
@@ -75,6 +88,7 @@ public abstract class EnemyBase : MonoBehaviour
                 EnableAggressiveMode();
             }
         }
+        CheckFootsteps();
 
         if (isAggressiveMode)
         {
@@ -105,7 +119,28 @@ public abstract class EnemyBase : MonoBehaviour
         }
         UpdateFacingDirection();
     }
-
+    protected void CheckFootsteps()
+    {
+        // ѕровер€ем, движетс€ ли враг
+        if ((isMoving || isChasing) && rb.velocity.magnitude > 0.1f)
+        {
+            // ѕровер€ем, прошло ли достаточно времени с последнего звука
+            if (Time.time - lastStepTime >= stepSoundInterval)
+            {
+                PlayFootstepSound();
+                lastStepTime = Time.time;
+            }
+        }
+    }
+    protected virtual void PlayFootstepSound()
+    {
+        if (soundManager != null && audioSource != null)
+        {
+            // ¬оспроизводим разные звуки в зависимости от состо€ни€
+            string soundKey = isChasing ? "enemy_run" : "enemy_walk";
+            soundManager.PlaySound(soundKey, audioSource);
+        }
+    }
     protected void EnableAggressiveMode()
     {
         isAggressiveMode = true;
