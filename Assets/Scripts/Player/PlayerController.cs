@@ -13,12 +13,14 @@ public class PlayerController : MonoBehaviour
     private bool isHidden = false;
     private float lastTime = 0f;
     public bool IsHidden { get { return isHidden; } }
-    private SoundManager soundManager;
+    //private SoundManager soundManager;
     private AudioSource audioSource;
+    private Animator animator;
     private void Start()
     {
+        animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        soundManager = FindObjectOfType<SoundManager>();
+        //soundManager = FindObjectOfType<SoundManager>();
         audioSource = GetComponent<AudioSource>();
 
         if (audioSource == null)
@@ -42,11 +44,19 @@ public class PlayerController : MonoBehaviour
         if (movement != Vector2.zero && !audioSource.isPlaying)
         {
             // Воспроизведение звука шагов, если игрок движется
-            soundManager?.PlaySound("footstep", audioSource);
+            //soundManager?.PlaySound("footstep", audioSource);
         }
         movement.x = Input.GetAxisRaw("Horizontal");
+        if (movement != Vector2.zero)
+        {
+            Debug.Log("Player is moving");
+        }
+        else
+        {
+            Debug.Log("Player is idle");
+        }
         RotateToMouse();
-
+        animator.SetBool("isWalking", movement != Vector2.zero);
         if (Input.GetKeyDown(KeyCode.E))
         {
             Interact();
@@ -64,7 +74,7 @@ public class PlayerController : MonoBehaviour
             {
                 lastTime = Time.time;
 
-                if (rb.velocity.magnitude > 9f)
+                if (rb.velocity.magnitude > 3f)
                 {
                     pulseController.UpPulseCounter();
                 }
