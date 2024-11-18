@@ -304,7 +304,7 @@ GameObject:
   - component: {fileID: 76443132}
   - component: {fileID: 76443131}
   m_Layer: 0
-  m_Name: _0006_Table
+  m_Name: table
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -490,7 +490,7 @@ GameObject:
   - component: {fileID: 119017535}
   - component: {fileID: 119017536}
   m_Layer: 0
-  m_Name: _0001s_0000s_0001_Layer-72-Copy-2
+  m_Name: wardrobe_door_right
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6534,7 +6534,7 @@ GameObject:
   - component: {fileID: 271849585}
   - component: {fileID: 271849584}
   m_Layer: 0
-  m_Name: "_0004_\u0422\u0443\u0448\u0430"
+  m_Name: corpse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6680,7 +6680,7 @@ GameObject:
   - component: {fileID: 305153960}
   - component: {fileID: 305153961}
   m_Layer: 10
-  m_Name: "\u041F\u0440\u043E\u043F\u0441_0003s_0001_Layer-25 1"
+  m_Name: door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6695,7 +6695,7 @@ Transform:
   m_GameObject: {fileID: 305153959}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.3999964, y: 0.38333333, z: 0}
+  m_LocalPosition: {x: -0.3999964, y: 0.3833333, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -6741,7 +6741,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: -2
   m_Sprite: {fileID: 21300000, guid: 785c536c03cc4f6409b2a77e708b8543, type: 3}
   m_Color: {r: 0.9339623, g: 0.9339623, b: 0.9339623, a: 1}
   m_FlipX: 0
@@ -7335,7 +7335,7 @@ GameObject:
   - component: {fileID: 355729524}
   - component: {fileID: 355729525}
   m_Layer: 0
-  m_Name: _0013_Layer-59
+  m_Name: skull
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7716,7 +7716,7 @@ GameObject:
   - component: {fileID: 455685793}
   - component: {fileID: 455685794}
   m_Layer: 0
-  m_Name: "_0001s_0000s_0014_\u0421\u043B\u043E\u0439-1"
+  m_Name: wardrobe
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8595,7 +8595,7 @@ SpriteRenderer:
   m_Size: {x: 3.82, y: 8.19}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &534992355
@@ -8775,7 +8775,7 @@ GameObject:
   - component: {fileID: 542015096}
   - component: {fileID: 542015097}
   m_Layer: 0
-  m_Name: _0001s_0000s_0000_Layer-72
+  m_Name: wardrobe_door_left
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8859,7 +8859,7 @@ GameObject:
   - component: {fileID: 577762077}
   - component: {fileID: 577762076}
   m_Layer: 0
-  m_Name: _0004_Boiler
+  m_Name: boiler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9132,8 +9132,8 @@ MonoBehaviour:
     openDoor: 0
     waitDuration: 10
   moveSpeed: 2
-  chaseSpeed: 5
-  aggressiveChaseSpeed: 6
+  chaseSpeed: 4
+  aggressiveChaseSpeed: 5
   actionParticles: {fileID: 270448650}
   playerLayer:
     serializedVersion: 2
@@ -9141,8 +9141,8 @@ MonoBehaviour:
   hideLayer:
     serializedVersion: 2
     m_Bits: 512
-  minTimeUntilAggressive: 180
-  maxTimeUntilAggressive: 300
+  minTimeUntilAggressive: 10
+  maxTimeUntilAggressive: 20
   stepSoundInterval: 0.5
   backRayLength: 5
   frontRayLength: 8
@@ -9650,7 +9650,7 @@ GameObject:
   - component: {fileID: 673600057}
   - component: {fileID: 673600056}
   m_Layer: 0
-  m_Name: _0009_Oven
+  m_Name: stove
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11964,7 +11964,7 @@ Transform:
   m_GameObject: {fileID: 812269863}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.03182888, y: -11.204647, z: 0}
+  m_LocalPosition: {x: -0.13, y: -11.19, z: 0}
   m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -13708,7 +13708,7 @@ GameObject:
   - component: {fileID: 1019538534}
   - component: {fileID: 1019538533}
   m_Layer: 10
-  m_Name: BodyQuest
+  m_Name: corpse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13927,7 +13927,7 @@ GameObject:
   - component: {fileID: 1035779489}
   - component: {fileID: 1035779488}
   m_Layer: 0
-  m_Name: "_0003_\u0422\u0443\u0448\u0430-2"
+  m_Name: corpse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14095,7 +14095,7 @@ GameObject:
   - component: {fileID: 1059243040}
   - component: {fileID: 1059243041}
   m_Layer: 0
-  m_Name: _0014_Layer-23
+  m_Name: skull
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14344,7 +14344,7 @@ GameObject:
   - component: {fileID: 1082827347}
   - component: {fileID: 1082827348}
   m_Layer: 0
-  m_Name: _0012_Layer-61 (1)
+  m_Name: skull
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14614,7 +14614,7 @@ GameObject:
   - component: {fileID: 1107569585}
   - component: {fileID: 1107569584}
   m_Layer: 0
-  m_Name: _0001_Layer-139
+  m_Name: head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16207,7 +16207,7 @@ GameObject:
   - component: {fileID: 1378971229}
   - component: {fileID: 1378971228}
   m_Layer: 0
-  m_Name: _0008_Crack-in-the-paul
+  m_Name: hole_ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16955,11 +16955,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9156769125901329509, guid: 49fcf473331b7ae4891794f4cae9ddc2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -19.36
+      value: -19.12
       objectReference: {fileID: 0}
     - target: {fileID: 9156769125901329509, guid: 49fcf473331b7ae4891794f4cae9ddc2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -10.51
+      value: -10.58
       objectReference: {fileID: 0}
     - target: {fileID: 9156769125901329509, guid: 49fcf473331b7ae4891794f4cae9ddc2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -16993,7 +16993,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 90
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6136881245240494801, guid: 49fcf473331b7ae4891794f4cae9ddc2, type: 3}
+    - {fileID: 7875410311578007734, guid: 49fcf473331b7ae4891794f4cae9ddc2, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -18918,7 +18920,7 @@ GameObject:
   - component: {fileID: 1588574443}
   - component: {fileID: 1588574444}
   m_Layer: 0
-  m_Name: _0012_Layer-61
+  m_Name: skull
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19430,7 +19432,7 @@ GameObject:
   - component: {fileID: 1683831357}
   - component: {fileID: 1683831356}
   m_Layer: 0
-  m_Name: _0005_Iron-Table
+  m_Name: table_iron
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19581,6 +19583,7 @@ GameObject:
   - component: {fileID: 1696594492}
   - component: {fileID: 1696594491}
   - component: {fileID: 1696594490}
+  - component: {fileID: 1696594493}
   m_Layer: 10
   m_Name: bodyBox
   m_TagString: Untagged
@@ -19645,7 +19648,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -2
   m_Sprite: {fileID: 21300000, guid: 9395681253f8b6245a84a554a0593b04, type: 3}
   m_Color: {r: 0.9339623, g: 0.9339623, b: 0.9339623, a: 1}
   m_FlipX: 0
@@ -19739,9 +19742,105 @@ MonoBehaviour:
   items:
   - {fileID: 1148397106}
   autoCloseDelay: 5
-  openSoundKey: 
-  closeSoundKey: 
-  audioSource: {fileID: 0}
+  openSoundKey: OpenWoodStand
+  closeSoundKey: CloseWoodStand
+  audioSource: {fileID: 1696594493}
+--- !u!82 &1696594493
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696594487}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.7
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1697437694
 GameObject:
   m_ObjectHideFlags: 0
@@ -21192,7 +21291,7 @@ GameObject:
   - component: {fileID: 1913799720}
   - component: {fileID: 1913799719}
   m_Layer: 0
-  m_Name: _0014_Paul
+  m_Name: Ground_kithen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21762,7 +21861,7 @@ GameObject:
   - component: {fileID: 1971971166}
   - component: {fileID: 1971971167}
   m_Layer: 0
-  m_Name: _0000s_0000_Layer-1 1
+  m_Name: blood
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

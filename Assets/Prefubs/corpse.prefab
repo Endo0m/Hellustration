@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6796271896780875898}
   - component: {fileID: 1655006040235380920}
   m_Layer: 0
-  m_Name: trup Re
+  m_Name: corpse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
