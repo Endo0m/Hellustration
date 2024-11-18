@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class SoundManager : MonoBehaviour
 {
+    // Статическая переменная для реализации Singleton
+    public static SoundManager Instance { get; private set; }
+
     // Структура для хранения ключа и аудиоклипа
     [System.Serializable]
     public struct Sound
@@ -18,6 +21,18 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()
     {
+        // Реализация Singleton
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Сохраняем объект при смене сцен (опционально)
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject); // Удаляем дублирующий экземпляр
+            return;
+        }
+
         // Инициализация словаря
         soundDictionary = new Dictionary<string, AudioClip>();
         foreach (Sound sound in sounds)

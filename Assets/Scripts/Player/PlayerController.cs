@@ -125,7 +125,7 @@ public class PlayerController : MonoBehaviour
         Renderer renderer = GetComponent<Renderer>();
         if (renderer != null)
         {
-            renderer.sortingOrder = -3;
+            renderer.sortingOrder = -5;
         }
 
         // Отключение света
