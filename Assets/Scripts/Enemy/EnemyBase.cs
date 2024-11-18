@@ -43,6 +43,8 @@ public abstract class EnemyBase : MonoBehaviour
     private float lastTeleportTime;
     private TeleportZone currentTargetTeleport;
     private bool isMovingToTeleport = false;
+    private Coroutine waypointActionCoroutine;
+
 
     public int CurrentWaypoint { get; private set; }
 
@@ -161,17 +163,43 @@ public abstract class EnemyBase : MonoBehaviour
     }
     protected void EnableAggressiveMode()
     {
+        // Check if player is available before enabling aggressive mode
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null || player.layer != LayerMask.NameToLayer("Player"))
+        {
+            // Player not found or is hidden, reset aggressive timer
+            InitializeAggressiveTimer();
+            return;
+        }
+
         isAggressiveMode = true;
         isMoving = false;
-        StopAllCoroutines();
+
+        if (waypointActionCoroutine != null)
+        {
+            StopCoroutine(waypointActionCoroutine);
+            waypointActionCoroutine = null;
+
+            // Stop particles if they are playing
+            if (actionParticles != null && actionParticles.isPlaying)
+            {
+                actionParticles.Stop();
+            }
+
+            // Reset animation parameters
+            animator.SetBool("IsActing", false);
+
+            // Increment the waypoint index
+            currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        }
+
         animator.SetBool("IsChasing", true);
         animator.SetBool("IsWalking", false);
-        animator.SetBool("IsActing", false);
 
-        // Устанавливаем таймер преследования
         currentChaseDuration = chaseDuration;
         isChaseTimerActive = true;
     }
+
 
     protected void DisableAggressiveMode()
     {
@@ -179,9 +207,13 @@ public abstract class EnemyBase : MonoBehaviour
         isChaseTimerActive = false;
         StopChasing();
 
-        // Устанавливаем новый таймер для следующего агрессивного режима
+        // Start a new aggressive timer
         InitializeAggressiveTimer();
+
+        // Resume patrolling
+        MoveToNextWaypoint();
     }
+
 
     protected void FindAndChasePlayer()
     {
@@ -190,7 +222,16 @@ public abstract class EnemyBase : MonoBehaviour
         {
             StartChasing(player.transform);
         }
+        else
+        {
+            // Player not found or is hidden, exit aggressive mode
+            if (isAggressiveMode)
+            {
+                DisableAggressiveMode();
+            }
+        }
     }
+
 
     protected void UpdateFacingDirection()
     {
@@ -277,7 +318,7 @@ public abstract class EnemyBase : MonoBehaviour
 
             if (!isAggressiveMode)
             {
-                StopAllCoroutines();
+                //StopAllCoroutines();
             }
         }
     }
@@ -289,7 +330,7 @@ public abstract class EnemyBase : MonoBehaviour
         {
             if (playerTransform.gameObject.layer == LayerMask.NameToLayer("Hidden"))
             {
-                // Player is hidden, stop chasing
+                // Player is hidden, exit aggressive mode
                 if (isAggressiveMode)
                 {
                     DisableAggressiveMode();
@@ -460,7 +501,12 @@ public abstract class EnemyBase : MonoBehaviour
         }
 
         animator.SetBool("IsActing", true);
+        //yield return new WaitForSeconds(currentData.waitDuration);
         yield return new WaitForSeconds(currentData.waitDuration);
+        while (isAggressiveMode || isChasing)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
         animator.SetBool("IsActing", false);
 
         if (currentData.enableParticles && actionParticles != null)
@@ -522,8 +568,9 @@ public abstract class EnemyBase : MonoBehaviour
                 rb.velocity = Vector2.zero;
                 animator.SetBool("IsWalking", false);
                 UpdateWaypoint(currentWaypointIndex);
-                StartCoroutine(HandleWaypointActions());
+                waypointActionCoroutine = StartCoroutine(HandleWaypointActions());
             }
+
         }
     }
 
