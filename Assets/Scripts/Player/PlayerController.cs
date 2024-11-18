@@ -6,26 +6,26 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float runSpeed = 8f; // Скорость бега
     [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
     [SerializeField] private PulseController pulseController;
+    [SerializeField] private GameObject playerLight; // Ссылка на дочерний объект света для отключения при прятании
+
     private float scale = 1f;
     private Rigidbody2D rb;
     private Vector2 movement;
-    private bool isRunning = false;
     private bool isHidden = false;
     private float lastTime = 0f;
     public bool IsHidden { get { return isHidden; } }
-    //private SoundManager soundManager;
+
     private AudioSource audioSource;
     private Animator animator;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        //soundManager = FindObjectOfType<SoundManager>();
         audioSource = GetComponent<AudioSource>();
 
         if (audioSource == null)
         {
-            // Добавление компонента AudioSource, если его нет
             audioSource = gameObject.AddComponent<AudioSource>();
         }
     }
@@ -40,36 +40,33 @@ public class PlayerController : MonoBehaviour
             }
             return;
         }
-        // Проверка на движение игрока
-        if (movement != Vector2.zero && !audioSource.isPlaying)
-        {
-            // Воспроизведение звука шагов, если игрок движется
-            //soundManager?.PlaySound("footstep", audioSource);
-        }
+
+        // Управление движением
         movement.x = Input.GetAxisRaw("Horizontal");
-        if (movement != Vector2.zero)
-        {
-            Debug.Log("Player is moving");
-        }
-        else
-        {
-            Debug.Log("Player is idle");
-        }
+        bool isShiftPressed = Input.GetKey(KeyCode.LeftShift);
+        float currentSpeed = isShiftPressed ? runSpeed : moveSpeed;
+
+        // Обновление направления вращения
         RotateToMouse();
-        animator.SetBool("isWalking", movement != Vector2.zero);
+
+        // Анимация на основе скорости
+        float velocityMagnitude = Mathf.Abs(rb.velocity.x);
+        animator.SetBool("isRunning", velocityMagnitude > moveSpeed);
+        animator.SetBool("isWalking", velocityMagnitude > 0 && velocityMagnitude <= moveSpeed);
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             Interact();
         }
+
+        // Применяем движение в FixedUpdate для физического взаимодействия
+        rb.velocity = new Vector2(movement.x * currentSpeed, rb.velocity.y);
     }
 
     private void FixedUpdate()
     {
         if (!isHidden)
         {
-            float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : moveSpeed;
-            rb.velocity = new Vector2(movement.x * currentSpeed, rb.velocity.y);
-
             if (Time.time - lastTime >= 1f)
             {
                 lastTime = Time.time;
@@ -99,7 +96,6 @@ public class PlayerController : MonoBehaviour
 
     private void Interact()
     {
-        // Проверка на взаимодействие с объектами в радиусе
         Collider2D[] interactables = Physics2D.OverlapCircleAll(transform.position, interactionRadius);
         foreach (var obj in interactables)
         {
@@ -112,35 +108,50 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void HideInObject(Transform hideout)
+    public void HideInObject(Transform hideout, bool faceRight)
     {
         isHidden = true;
         transform.position = hideout.position;
-        gameObject.layer = LayerMask.NameToLayer("Hidden"); // Меняем слой на "Hidden"
+        gameObject.layer = LayerMask.NameToLayer("Hidden");
         rb.velocity = Vector2.zero;
-
-        // Замораживаем физику (Kinematic)
         rb.isKinematic = true;
 
-        // Изменяем ордер слоя (например, на -3)
+        // Установка направления (лицо влево или вправо)
+        transform.localScale = new Vector3(faceRight ? scale : -scale, scale, scale);
+        animator.SetBool("isWalking", false);
+        animator.SetBool("isRunning", false);
+
+        // Изменение слоя для прорисовки
         Renderer renderer = GetComponent<Renderer>();
         if (renderer != null)
         {
-            renderer.sortingOrder = -3; // Остановим взаимодействие с физикой
+            renderer.sortingOrder = -3;
+        }
+
+        // Отключение света
+        if (playerLight != null)
+        {
+            playerLight.SetActive(false);
         }
     }
 
     public void Reveal()
     {
         isHidden = false;
-        gameObject.layer = LayerMask.NameToLayer("Player"); // Возвращаем слой обратно на "Player"
-        rb.isKinematic = false; // Возвращаем физику
+        gameObject.layer = LayerMask.NameToLayer("Player");
+        rb.isKinematic = false;
 
-        // Восстанавливаем ордер слоя в нормальное положение (например, на 0)
+        // Восстановление слоя для прорисовки
         Renderer renderer = GetComponent<Renderer>();
         if (renderer != null)
         {
-            renderer.sortingOrder = 0; // Восстанавливаем ордер слоя
+            renderer.sortingOrder = 0;
+        }
+
+        // Включение света
+        if (playerLight != null)
+        {
+            playerLight.SetActive(true);
         }
     }
 
