@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a63620090a836694f81feb8df8d4990b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemSprite: {fileID: 21300000, guid: 0a3cad2bb988a224f9bb298d86000f34, type: 3}
+  itemSprite: {fileID: 21300000, guid: 54f1ad6f0c98d3641a211123693b69a2, type: 3}
   itemName: gem
   fadeDuration: 1
 --- !u!61 &358952824349071100

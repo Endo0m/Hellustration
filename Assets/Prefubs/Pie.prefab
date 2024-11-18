@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8339182072346202460}
   - component: {fileID: 4421702599224439863}
   m_Layer: 0
-  m_Name: Pirog
+  m_Name: Pie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -2.995, y: 2.1350002, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 43867cb2dbafd674a9e27a989c512977, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 01b20ee91c8be8a4eaa058652081cb3e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -123,14 +123,14 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.17, y: 0.62}
+    oldSize: {x: 7.59, y: 3.99}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.1982425, y: 0.6651373}
+  m_Size: {x: 7, y: 4}
   m_EdgeRadius: 0
 --- !u!114 &8339182072346202460
 MonoBehaviour:
