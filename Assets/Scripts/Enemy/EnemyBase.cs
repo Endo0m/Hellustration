@@ -17,6 +17,9 @@ public abstract class EnemyBase : MonoBehaviour
 
     [SerializeField] protected float minTimeUntilAggressive = 180f; // Минимальное время (3 минуты)
     [SerializeField] protected float maxTimeUntilAggressive = 300f; // Максимальное время (5 минут)
+    [SerializeField] protected float chaseDuration = 30f; // Длительность преследования
+    protected float currentChaseDuration; // Текущее время преследования
+    protected bool isChaseTimerActive = false; // Активен ли таймер преследования
     protected float aggressiveTimer;
     protected bool isAggressiveMode = false;
     protected AudioSource audioSource;
@@ -40,6 +43,8 @@ public abstract class EnemyBase : MonoBehaviour
     private float lastTeleportTime;
     private TeleportZone currentTargetTeleport;
     private bool isMovingToTeleport = false;
+    private Coroutine waypointActionCoroutine;
+
 
     public int CurrentWaypoint { get; private set; }
 
@@ -90,6 +95,15 @@ public abstract class EnemyBase : MonoBehaviour
                 EnableAggressiveMode();
             }
         }
+        else if (isChaseTimerActive)
+        {
+            currentChaseDuration -= Time.deltaTime;
+            if (currentChaseDuration <= 0)
+            {
+                DisableAggressiveMode();
+            }
+        }
+
         CheckFootsteps();
 
         if (isAggressiveMode)
@@ -149,22 +163,75 @@ public abstract class EnemyBase : MonoBehaviour
     }
     protected void EnableAggressiveMode()
     {
+        // Check if player is available before enabling aggressive mode
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null || player.layer != LayerMask.NameToLayer("Player"))
+        {
+            // Player not found or is hidden, reset aggressive timer
+            InitializeAggressiveTimer();
+            return;
+        }
+
         isAggressiveMode = true;
         isMoving = false;
-        StopAllCoroutines();
+
+        if (waypointActionCoroutine != null)
+        {
+            StopCoroutine(waypointActionCoroutine);
+            waypointActionCoroutine = null;
+
+            // Stop particles if they are playing
+            if (actionParticles != null && actionParticles.isPlaying)
+            {
+                actionParticles.Stop();
+            }
+
+            // Reset animation parameters
+            animator.SetBool("IsActing", false);
+
+            // Increment the waypoint index
+            currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        }
+
         animator.SetBool("IsChasing", true);
         animator.SetBool("IsWalking", false);
-        animator.SetBool("IsActing", false);
+
+        currentChaseDuration = chaseDuration;
+        isChaseTimerActive = true;
     }
+
+
+    protected void DisableAggressiveMode()
+    {
+        isAggressiveMode = false;
+        isChaseTimerActive = false;
+        StopChasing();
+
+        // Start a new aggressive timer
+        InitializeAggressiveTimer();
+
+        // Resume patrolling
+        MoveToNextWaypoint();
+    }
+
 
     protected void FindAndChasePlayer()
     {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
+        if (player != null && player.layer == LayerMask.NameToLayer("Player"))
         {
             StartChasing(player.transform);
         }
+        else
+        {
+            // Player not found or is hidden, exit aggressive mode
+            if (isAggressiveMode)
+            {
+                DisableAggressiveMode();
+            }
+        }
     }
+
 
     protected void UpdateFacingDirection()
     {
@@ -203,24 +270,40 @@ public abstract class EnemyBase : MonoBehaviour
                 StartChasing(frontHit.collider != null ? frontHit.collider.transform : backHit.collider.transform);
             }
         }
-        else if (!isAggressiveMode)
+        else
         {
             bool playerVisible = false;
+            bool playerHidden = false;
 
-            if (frontHit.collider != null && frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
-                playerVisible = true;
-            if (backHit.collider != null && backHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
-                playerVisible = true;
-
-            if (!playerVisible ||
-                (frontHit.collider?.gameObject.layer == LayerMask.NameToLayer("Hidden") ||
-                 backHit.collider?.gameObject.layer == LayerMask.NameToLayer("Hidden")))
+            if (frontHit.collider != null)
             {
-                StopChasing();
+                if (frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
+                    playerVisible = true;
+                else if (frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Hidden"))
+                    playerHidden = true;
+            }
+
+            if (backHit.collider != null)
+            {
+                if (backHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
+                    playerVisible = true;
+                else if (backHit.collider.gameObject.layer == LayerMask.NameToLayer("Hidden"))
+                    playerHidden = true;
+            }
+
+            if (!playerVisible || playerHidden)
+            {
+                if (isAggressiveMode)
+                {
+                    DisableAggressiveMode();
+                }
+                else
+                {
+                    StopChasing();
+                }
             }
         }
     }
-
     protected void StartChasing(Transform player)
     {
         if (!isChasing)
@@ -235,15 +318,29 @@ public abstract class EnemyBase : MonoBehaviour
 
             if (!isAggressiveMode)
             {
-                StopAllCoroutines();
+                //StopAllCoroutines();
             }
         }
     }
 
     protected void HandleChasingLogic()
     {
+
         if (playerTransform != null)
         {
+            if (playerTransform.gameObject.layer == LayerMask.NameToLayer("Hidden"))
+            {
+                // Player is hidden, exit aggressive mode
+                if (isAggressiveMode)
+                {
+                    DisableAggressiveMode();
+                }
+                else
+                {
+                    StopChasing();
+                }
+                return;
+            }
             float yDifference = Mathf.Abs(playerTransform.position.y - transform.position.y);
 
             if (yDifference > teleportSearchThresholdY)
@@ -343,7 +440,7 @@ public abstract class EnemyBase : MonoBehaviour
         animator.SetBool("IsWalking", true);
     }
 
-  
+
 
     protected void StopChasing()
     {
@@ -404,7 +501,12 @@ public abstract class EnemyBase : MonoBehaviour
         }
 
         animator.SetBool("IsActing", true);
+        //yield return new WaitForSeconds(currentData.waitDuration);
         yield return new WaitForSeconds(currentData.waitDuration);
+        while (isAggressiveMode || isChasing)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
         animator.SetBool("IsActing", false);
 
         if (currentData.enableParticles && actionParticles != null)
@@ -436,19 +538,76 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected void MoveTowardsWaypoint()
     {
-        if (currentWaypointIndex >= waypoints.Length || isAggressiveMode) return;
+        if (currentWaypointIndex >= waypoints.Length) return;
 
         Transform targetPoint = waypoints[currentWaypointIndex].point;
-        Vector2 direction = (targetPoint.position - transform.position).normalized;
-        rb.velocity = direction * moveSpeed;
-        animator.SetBool("IsWalking", true);
+        float yDifference = Mathf.Abs(targetPoint.position.y - transform.position.y);
 
-        if (Vector2.Distance(transform.position, targetPoint.position) < 0.1f)
+        if (yDifference > teleportSearchThresholdY)
         {
-            rb.velocity = Vector2.zero;
-            animator.SetBool("IsWalking", false);
-            UpdateWaypoint(currentWaypointIndex);
-            StartCoroutine(HandleWaypointActions());
+            if (!isMovingToTeleport)
+            {
+                SearchForTeleportToWaypoint(targetPoint.position);
+            }
+            else if (currentTargetTeleport != null)
+            {
+                MoveToTeleport();
+            }
+        }
+        else
+        {
+            isMovingToTeleport = false;
+            currentTargetTeleport = null;
+
+            Vector2 direction = (targetPoint.position - transform.position).normalized;
+            rb.velocity = direction * moveSpeed;
+            animator.SetBool("IsWalking", true);
+
+            if (Vector2.Distance(transform.position, targetPoint.position) < 0.1f)
+            {
+                rb.velocity = Vector2.zero;
+                animator.SetBool("IsWalking", false);
+                UpdateWaypoint(currentWaypointIndex);
+                waypointActionCoroutine = StartCoroutine(HandleWaypointActions());
+            }
+
+        }
+    }
+
+    protected void SearchForTeleportToWaypoint(Vector3 targetPosition)
+    {
+        if (Time.time - lastTeleportTime < teleportCooldown) return;
+
+        TeleportZone[] teleports = FindObjectsOfType<TeleportZone>();
+        float targetY = targetPosition.y;
+
+        TeleportZone bestTeleport = null;
+        float bestScore = float.MaxValue;
+
+        foreach (var teleport in teleports)
+        {
+            if (teleport.GetDestination() == null) continue;
+
+            float currentYDiff = Mathf.Abs(transform.position.y - targetY);
+            float afterTeleportYDiff = Mathf.Abs(teleport.GetDestination().position.y - targetY);
+
+            if (afterTeleportYDiff < currentYDiff)
+            {
+                float distanceToTeleport = Vector2.Distance(transform.position, teleport.transform.position);
+                float score = distanceToTeleport + afterTeleportYDiff;
+
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestTeleport = teleport;
+                }
+            }
+        }
+
+        if (bestTeleport != null)
+        {
+            currentTargetTeleport = bestTeleport;
+            isMovingToTeleport = true;
         }
     }
 

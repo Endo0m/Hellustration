@@ -110,10 +110,14 @@ public class PlayerController : MonoBehaviour
 
     public void HideInObject(Transform hideout, bool faceRight)
     {
+        // Остановка движения
+        movement = Vector2.zero;
+        rb.velocity = Vector2.zero;
+
+        // Прятание
         isHidden = true;
         transform.position = hideout.position;
         gameObject.layer = LayerMask.NameToLayer("Hidden");
-        rb.velocity = Vector2.zero;
         rb.isKinematic = true;
 
         // Установка направления (лицо влево или вправо)
