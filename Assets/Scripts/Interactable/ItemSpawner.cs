@@ -18,7 +18,10 @@ public class ItemSpawner : MonoBehaviour
         if (other.CompareTag("Enemy"))
         {
             EnemyBase enemyBase = other.GetComponent<EnemyBase>();
-            // Проверяем, что враг прошел необходимую точку для активации спавна
+
+            // Add debug logging to verify conditions
+            Debug.Log($"Enemy detected. Current Waypoint: {enemyBase.CurrentWaypoint}, Required Waypoint: {requiredWaypointForSpawn}");
+
             if (enemyBase != null && enemyBase.CurrentWaypoint >= requiredWaypointForSpawn && !hasSpawned)
             {
                 StartCoroutine(SpawnItemsSequentially());

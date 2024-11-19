@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ButcherEnemy : EnemyBase
 {
     [SerializeField] private List<string> requiredItems;
+    [SerializeField] private float detectionRadius = 3f; // Радиус обнаружения для "ловли" игрока
     private HashSet<string> collectedItems = new HashSet<string>();
+    private bool isPlayerCaptured = false;
+    private bool hasAllItems = false; // Флаг, показывающий, что все предметы собраны
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -14,15 +18,86 @@ public class ButcherEnemy : EnemyBase
         {
             collectedItems.Add(item.ItemName);
             Debug.Log($"Мясник получил предмет: {item.ItemName}");
+            CheckIfAllItemsCollected();
         }
     }
 
-    protected override void CheckIfDefeated()
+    private void CheckIfAllItemsCollected()
     {
         if (collectedItems.Count >= requiredItems.Count)
         {
-            Debug.Log("Мясник побежден!");
-            Destroy(gameObject);
+            hasAllItems = true; // Устанавливаем флаг, что все предметы собраны
+            Debug.Log("Все предметы собраны. Мясник завершает маршрут.");
         }
+    }
+
+    private new void Update()
+    {
+        if (!isPlayerCaptured)
+        {
+            base.Update(); // Выполняем обычную логику врага
+            DetectAndCapturePlayer();
+        }
+
+        // Проверка, достиг ли враг последней точки маршрута
+        if (hasAllItems && currentWaypointIndex == waypoints.Length - 1)
+        {
+            float distanceToLastWaypoint = Vector2.Distance(transform.position, waypoints[waypoints.Length - 1].point.position);
+            if (distanceToLastWaypoint < 0.1f) // Проверка на близость к последней точке
+            {
+                CheckIfDefeated();
+            }
+        }
+    }
+
+
+    protected override void CheckIfDefeated()
+    {
+        if (hasAllItems && currentWaypointIndex >= waypoints.Length - 1)
+        {
+            Debug.Log("Мясник побежден на последней точке маршрута!");
+            Destroy(gameObject);
+            SceneManager.LoadScene("MainMenu");
+        }
+    }
+
+    private void DetectAndCapturePlayer()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
+            if (distanceToPlayer <= detectionRadius)
+            {
+                PlayerController playerController = player.GetComponent<PlayerController>();
+                if (playerController != null)
+                {
+                    // Устанавливаем флаг, чтобы остановить врага
+                    isPlayerCaptured = true;
+
+                    // Включаем анимацию смерти игрока
+                    playerController.TriggerDeathAnimation(() => SceneManager.LoadScene("MainMenu"));
+
+                    // Останавливаем врага (можно добавить анимацию "победы" или "ожидания")
+                    StopEnemyActions();
+                }
+            }
+        }
+    }
+
+    private void StopEnemyActions()
+    {
+        // Останавливаем анимации врага
+        animator.SetBool("IsWalking", false);
+        animator.SetBool("IsChasing", false);
+
+        // Останавливаем движение
+        rb.velocity = Vector2.zero;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius); // Рисуем радиус обнаружения игрока
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -158,6 +159,32 @@ public class PlayerController : MonoBehaviour
             playerLight.SetActive(true);
         }
     }
+    public void TriggerDeathAnimation(System.Action onDeathComplete)
+    {
+        animator.SetTrigger("Die"); // Предполагается, что у вас есть триггер "Die" для анимации смерти
+        StartCoroutine(HandleDeathAnimation(onDeathComplete));
+    }
+
+    private IEnumerator HandleDeathAnimation(System.Action onDeathComplete)
+    {
+        // Ждем пока начнется анимация
+        yield return new WaitForEndOfFrame();
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+        // Проверяем, что анимация действительно перешла в состояние "Die"
+        if (stateInfo.IsName("Die"))
+        {
+            yield return new WaitForSeconds(stateInfo.length);
+        }
+        else
+        {
+            // Если анимация не началась, устанавливаем некоторое время ожидания по умолчанию
+            yield return new WaitForSeconds(1f);
+        }
+
+        onDeathComplete?.Invoke();
+    }
+
 
     private void OnDrawGizmosSelected()
     {
