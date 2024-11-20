@@ -2,29 +2,30 @@ using UnityEngine;
 
 public class RayCheck : MonoBehaviour
 {
-    [SerializeField] private LayerMask enemyLayer; // Слой врагов
-    [SerializeField] private LayerMask teleportLayer; // Слой телепортов
-    [SerializeField] private float rayDistance = 10f; // Длина луча
-    [SerializeField] private Color rayColor = Color.red; // Цвет луча
-    [SerializeField] private PlayerPulseUI playerPulseUI; // Ссылка на пульсацию UI
-    [SerializeField] private float checkInterval = 1f; // Интервал проверки в секундах
+    [SerializeField] private LayerMask enemyLayer; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    [SerializeField] private LayerMask teleportLayer; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    [SerializeField] private float rayDistance = 10f; // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    [SerializeField] private Color rayColor = Color.red; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    [SerializeField] private PlayerPulseUI playerPulseUI; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ UI
+    [SerializeField] private float checkInterval = 1f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    [SerializeField] private PulseController pulseController;
 
-    private bool isFacingRight = true; // Определение текущего направления игрока
-    private float nextCheckTime; // Время следующей проверки
-    private bool enemyDetected = false; // Флаг обнаружения врага
-    private PlayerController playerController; // Ссылка на контроллер игрока
+    private bool isFacingRight = true; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    private float nextCheckTime; // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    private bool enemyDetected = false; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+    private PlayerController playerController; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
     private void Start()
     {
-        playerController = GetComponent<PlayerController>(); // Получаем ссылку на контроллер игрока
+        playerController = GetComponent<PlayerController>(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     private void Update()
     {
-        // Обновляем направление игрока
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         HandlePlayerFlip();
 
-        // Выполняем проверку, если прошло нужное время
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (Time.time >= nextCheckTime)
         {
             PerformRayCheck();
@@ -37,43 +38,45 @@ public class RayCheck : MonoBehaviour
         Vector2 direction = isFacingRight ? Vector2.right : Vector2.left;
         bool enemyFound = CastRayWithTeleportCheck(transform.position, direction);
 
-        // Управляем пульсацией UI в зависимости от наличия врага
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ UI пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (enemyFound && !enemyDetected)
         {
             enemyDetected = true;
-            playerPulseUI?.StartPulse(); // Запускаем пульсацию
+            playerPulseUI?.StartPulse(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+            pulseController?.StartIncreasingPulse();
         }
         else if (!enemyFound && enemyDetected)
         {
             enemyDetected = false;
-            playerPulseUI?.StopPulse(); // Останавливаем пульсацию
+            playerPulseUI?.StopPulse(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+            pulseController?.StopIncreasingPulse();
         }
     }
 
     private bool CastRayWithTeleportCheck(Vector2 origin, Vector2 direction)
     {
-        // Проверяем, не скрыт ли игрок
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (playerController.IsHidden)
         {
-            Debug.Log("Игрок скрыт, не виден для врагов.");
-            return false; // Игрок скрыт, и его не видно через луч
+            Debug.Log("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
+            return false; // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
         }
 
         RaycastHit2D hit = Physics2D.Raycast(origin, direction, rayDistance, enemyLayer | teleportLayer);
-        Debug.DrawRay(origin, direction * rayDistance, rayColor); // Визуализация луча
+        Debug.DrawRay(origin, direction * rayDistance, rayColor); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 
         if (hit.collider != null)
         {
-            Debug.Log("Луч пересекся с объектом: " + hit.collider.name); // Дебаг, показываем имя объекта, с которым пересекся луч
+            Debug.Log("пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: " + hit.collider.name); // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 
             if (hit.collider.CompareTag("Enemy"))
             {
-                Debug.Log("Враг обнаружен!");
-                return true; // Враг найден
+                Debug.Log("пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
+                return true; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             }
             else if (hit.collider.CompareTag("TeleportZone"))
             {
-                Debug.Log("Телепортная зона обнаружена.");
+                Debug.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
                 TeleportZone teleport = hit.collider.GetComponent<TeleportZone>();
                 if (teleport != null)
                 {
@@ -84,15 +87,15 @@ public class RayCheck : MonoBehaviour
         }
         else
         {
-            Debug.Log("Луч не встретил никаких объектов.");
+            Debug.Log("пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.");
         }
 
-        return false; // Враг не найден
+        return false; // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     private void HandlePlayerFlip()
     {
-        // Проверяем направление игрока по scale (например, для флипа по оси X)
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ scale (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ X)
         if (transform.localScale.x > 0)
         {
             isFacingRight = true;
@@ -103,14 +106,14 @@ public class RayCheck : MonoBehaviour
         }
     }
 
-    // Отображение луча и информации в редакторе через Gizmos
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ Gizmos
     private void OnDrawGizmos()
     {
         Gizmos.color = rayColor;
-        Gizmos.DrawLine(transform.position, transform.position + (isFacingRight ? Vector3.right : Vector3.left) * rayDistance); // Рисуем луч
+        Gizmos.DrawLine(transform.position, transform.position + (isFacingRight ? Vector3.right : Vector3.left) * rayDistance); // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 
-        // Опционально, можно добавить дополнительную информацию
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position + (isFacingRight ? Vector3.right : Vector3.left) * rayDistance, 0.2f); // Конец луча
+        Gizmos.DrawWireSphere(transform.position + (isFacingRight ? Vector3.right : Vector3.left) * rayDistance, 0.2f); // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     }
 }
