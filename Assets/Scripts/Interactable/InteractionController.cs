@@ -3,14 +3,17 @@ using UnityEngine.EventSystems;
 
 public class InteractionController : MonoBehaviour
 {
-    [SerializeField] private float interactionDistance = 2f; // Дистанция взаимодействия для объектов
-    [SerializeField] private LayerMask interactableLayer; // Слой для определения взаимодействуемых объектов
+    [SerializeField] private float interactionWidth = 2f;   // Ширина капсулы взаимодействия
+    [SerializeField] private float interactionHeight = 4f;  // Высота капсулы взаимодействия
+    [SerializeField] private LayerMask interactableLayer;   // Слой для определения взаимодействуемых объектов
 
     private Camera mainCamera;
+    private CollectController collectController; // Ссылка на CollectController
 
     private void Start()
     {
         mainCamera = Camera.main;
+        collectController = GetComponent<CollectController>();
     }
 
     private void Update()
@@ -31,43 +34,79 @@ public class InteractionController : MonoBehaviour
             return;
         }
 
-        // Взаимодействие с игровыми объектами
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, interactionDistance, interactableLayer);
+        // Определяем параметры капсулы взаимодействия
+        Vector2 capsuleCenter = transform.position; // Центр капсулы — позиция игрока
+        Vector2 capsuleSize = new Vector2(interactionWidth, interactionHeight);
+        float capsuleAngle = 0f; // Без поворота
 
-        if (hit.collider != null)
+        // Получаем все коллайдеры внутри капсулы взаимодействия
+        Collider2D[] hits = Physics2D.OverlapCapsuleAll(
+            capsuleCenter,
+            capsuleSize,
+            CapsuleDirection2D.Vertical,
+            capsuleAngle,
+            interactableLayer
+        );
+
+        if (hits.Length > 0)
         {
-            ICollectible collectible = hit.collider.GetComponent<ICollectible>();
-            if (collectible != null)
+            // Получаем позицию мыши в мировых координатах
+            Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 mousePos2D = new Vector2(mousePosition.x, mousePosition.y);
+
+            // Обрабатываем каждый найденный коллайдер
+            foreach (Collider2D hit in hits)
             {
-                CollectController collectController = GetComponent<CollectController>();
-                if (collectController != null)
+                // Проверяем, находится ли курсор мыши над коллайдером
+                if (hit.OverlapPoint(mousePos2D))
                 {
-                    collectible.Collect(collectController); // Передаем collectController вместо InteractionController
+                    // Обработка собираемых предметов
+                    ICollectible collectible = hit.GetComponent<ICollectible>();
+                    if (collectible != null)
+                    {
+                        if (collectController != null)
+                        {
+                            collectible.Collect(collectController);
+                        }
+                        return;
+                    }
+
+                    // Обработка подсказок (HintItem)
+                    HintItem hintItem = hit.GetComponent<HintItem>();
+                    if (hintItem != null)
+                    {
+                        if (collectController != null)
+                        {
+                            collectController.AddHintToInventory(hintItem);
+                            hintItem.gameObject.SetActive(false);
+                        }
+                        return;
+                    }
+
+                    // Обработка других взаимодействий
+                    IInteractable interactable = hit.GetComponent<IInteractable>();
+                    if (interactable != null)
+                    {
+                        interactable.Interact(gameObject);
+                        return;
+                    }
+
+                    // Обработка WobbleObject
+                    WobbleObject wobbleObject = hit.GetComponent<WobbleObject>();
+                    if (wobbleObject != null)
+                    {
+                        wobbleObject.Interact(gameObject);
+                        return;
+                    }
+
+                    // Обработка Box
+                    Box box = hit.GetComponent<Box>();
+                    if (box != null)
+                    {
+                        box.Interact(gameObject);
+                        return;
+                    }
                 }
-                return;
-            }
-
-
-            // Проверка на WobbleObject (активация покачивания)
-            WobbleObject wobbleObject = hit.collider.GetComponent<WobbleObject>();
-            if (wobbleObject != null)
-            {
-                wobbleObject.Interact(gameObject);
-                return;
-            }
-            Box box = hit.collider.GetComponent<Box>();
-            if (box != null)
-            {
-                box.Interact(gameObject);
-                return;
-            }
-
-            // Проверка на IInteractable (общее взаимодействие)
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-            if (interactable != null)
-            {
-                interactable.Interact(gameObject);
             }
         }
     }
@@ -75,8 +114,6 @@ public class InteractionController : MonoBehaviour
     private void HandleUIInteraction()
     {
         // Логика обработки взаимодействия с UI (например, перетаскивание предметов)
-        // Здесь можно использовать логику для DraggableUIItem
-        // Получаем компонент под курсором, если необходимо
         PointerEventData pointerEventData = new PointerEventData(EventSystem.current) { position = Input.mousePosition };
         var results = new System.Collections.Generic.List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerEventData, results);
@@ -87,10 +124,45 @@ public class InteractionController : MonoBehaviour
             if (draggableItem != null)
             {
                 // Логика взаимодействия с UI-предметом
-                // Например, вызов метода для начала перетаскивания или другого действия
-                Debug.Log($"UI Item interacted: {draggableItem.ItemName}");
+                Debug.Log($"Взаимодействие с UI-предметом: {draggableItem.ItemName}");
                 return;
             }
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Визуализация капсулы взаимодействия в окне сцены
+        Gizmos.color = Color.yellow;
+
+        Vector2 capsuleCenter = transform.position;
+        Vector2 capsuleSize = new Vector2(interactionWidth, interactionHeight);
+        float capsuleAngle = 0f;
+
+        DrawWireCapsule(capsuleCenter, capsuleSize, capsuleAngle);
+    }
+
+    private void DrawWireCapsule(Vector2 center, Vector2 size, float angle)
+    {
+        // Сохраняем текущую матрицу Gizmos
+        Matrix4x4 oldMatrix = Gizmos.matrix;
+
+        // Применяем поворот и позицию
+        Gizmos.matrix = Matrix4x4.TRS(center, Quaternion.Euler(0f, 0f, angle), Vector3.one);
+
+        float radius = size.x / 2f;
+        float height = size.y - (radius * 2f);
+
+        // Рисуем центральный прямоугольник
+        Gizmos.DrawWireCube(Vector3.zero, new Vector3(size.x, height, 0f));
+
+        // Рисуем верхнюю полусферу
+        Gizmos.DrawWireSphere(new Vector3(0f, height / 2f, 0f), radius);
+
+        // Рисуем нижнюю полусферу
+        Gizmos.DrawWireSphere(new Vector3(0f, -height / 2f, 0f), radius);
+
+        // Восстанавливаем матрицу Gizmos
+        Gizmos.matrix = oldMatrix;
     }
 }

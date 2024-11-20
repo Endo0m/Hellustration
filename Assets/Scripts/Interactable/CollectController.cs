@@ -8,7 +8,7 @@ using DG.Tweening;
 public class CollectController : MonoBehaviour
 {
     [Header("Inventory Settings")]
-    [SerializeField] private Transform inventoryUIParent; // Родитель для слотов с обычными предметами (существующие Image)
+    [SerializeField] private Transform inventoryUIParent; // Родитель для слотов с обычными предметами
     [SerializeField] private int totalItemsToCollect = 3; // Количество предметов для активации перетаскивания
 
     [Header("Hint Inventory Settings")]
@@ -34,36 +34,7 @@ public class CollectController : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0)) // Проверка нажатия ЛКМ
-        {
-            // Проверка на взаимодействие с UI
-            if (EventSystem.current.IsPointerOverGameObject()) return;
-
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-            if (hit.collider != null)
-            {
-                // Подбор обычного предмета
-                ICollectible collectible = hit.collider.GetComponent<ICollectible>();
-                if (collectible != null)
-                {
-                    collectible.Collect(this);
-                    return;
-                }
-
-                // Подбор подсказки (HintItem)
-                HintItem hintItem = hit.collider.GetComponent<HintItem>();
-                if (hintItem != null)
-                {
-                    AddHintToInventory(hintItem);
-                    hintItem.gameObject.SetActive(false); // Отключаем объект после подбора
-                }
-            }
-        }
-    }
+    // Удаляем метод Update(), так как взаимодействие теперь обрабатывается в InteractionController
 
     public void AddItemToInventory(CollectibleItem item)
     {
@@ -103,8 +74,6 @@ public class CollectController : MonoBehaviour
         GameObject slot = Instantiate(hintSlotPrefab, hintInventoryUIParent);
         Button button = slot.AddComponent<Button>();
         button.onClick.AddListener(() => ShowHint(hintItem.HintText));
-
-       
     }
 
     private void ShowHint(string hintText)
