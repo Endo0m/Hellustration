@@ -38,7 +38,7 @@ public class PulseController : MonoBehaviour
 
     public void RestorePulse()
     {
-        StartCoroutine(PulseCoroutine());
+       // StartCoroutine(PulseCoroutine());
     }
 
     public void UpPulseCounter()

@@ -7,7 +7,7 @@ public class TeleportZone : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player") || other.CompareTag("Enemy"))
+        if (other.CompareTag("Enemy"))
         {
             // Передаем объект other.gameObject в метод Teleport
             Teleport(other.gameObject);

@@ -4,15 +4,22 @@ using System.Collections;
 public class Door : MonoBehaviour, IInteractable
 {
     [SerializeField] private Animator doorAnimator;
-    [SerializeField] private GameObject transitionTrigger;
+    [SerializeField] private GameObject[] transitionTriggers;
     [SerializeField] private float autoCloseDelay = 3f;
     private bool isOpen = false;
 
     private void Start()
     {
-        if (transitionTrigger != null)
+        // Отключаем все триггеры при запуске
+        if (transitionTriggers != null)
         {
-            transitionTrigger.SetActive(false);
+            foreach (var trigger in transitionTriggers)
+            {
+                if (trigger != null)
+                {
+                    trigger.SetActive(false);
+                }
+            }
         }
     }
 
@@ -34,6 +41,7 @@ public class Door : MonoBehaviour, IInteractable
         }
         else if (interactor.CompareTag("Enemy"))
         {
+            Debug.Log("Враг взаимодействует с дверью");
         }
     }
 
@@ -41,9 +49,15 @@ public class Door : MonoBehaviour, IInteractable
     {
         isOpen = true;
         doorAnimator.SetTrigger("OpenDoor");
-        if (transitionTrigger != null)
+        if (transitionTriggers != null)
         {
-            transitionTrigger.SetActive(true);
+            foreach (var trigger in transitionTriggers)
+            {
+                if (trigger != null)
+                {
+                    trigger.SetActive(true);
+                }
+            }
         }
 
         StartCoroutine(AutoCloseDoor());
@@ -53,9 +67,15 @@ public class Door : MonoBehaviour, IInteractable
     {
         isOpen = false;
         doorAnimator.SetTrigger("CloseDoor");
-        if (transitionTrigger != null)
+        if (transitionTriggers != null)
         {
-            transitionTrigger.SetActive(false);
+            foreach (var trigger in transitionTriggers)
+            {
+                if (trigger != null)
+                {
+                    trigger.SetActive(false);
+                }
+            }
         }
     }
 

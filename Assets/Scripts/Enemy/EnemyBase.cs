@@ -26,6 +26,8 @@ public abstract class EnemyBase : MonoBehaviour
     protected SoundManager soundManager;
     [SerializeField] protected float stepSoundInterval = 0.5f; // Интервал между звуками шагов
     protected float lastStepTime;
+    [SerializeField] private float raycastYOffset = 0f; // Смещение луча по вертикали
+
     [SerializeField] protected float backRayLength = 5f;
     [SerializeField] protected float frontRayLength = 8f;
     [SerializeField] protected float extendedFrontRayLength = 12f;
@@ -79,16 +81,12 @@ public abstract class EnemyBase : MonoBehaviour
         audioSource.spatialBlend = 1;
     }
 
-    public void UpdateWaypoint(int waypoint)
-    {
-        CurrentWaypoint = waypoint;
-        Debug.Log($"Waypoint updated to: {CurrentWaypoint}");
-    }
 
     protected virtual void Update()
     {
         if (!isAggressiveMode)
         {
+            // Обновление таймера агрессивного режима
             aggressiveTimer -= Time.deltaTime;
             if (aggressiveTimer <= 0)
             {
@@ -97,6 +95,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
         else if (isChaseTimerActive)
         {
+            // Обновление таймера преследования в агрессивном режиме
             currentChaseDuration -= Time.deltaTime;
             if (currentChaseDuration <= 0)
             {
@@ -106,35 +105,28 @@ public abstract class EnemyBase : MonoBehaviour
 
         CheckFootsteps();
 
-        if (isAggressiveMode)
+        // Проверка обнаружения игрока ПЕРЕД логикой движения
+        CheckPlayerDetection();
+
+        // Логика движения
+        if (isChasing && playerTransform != null)
         {
-            if (!isChasing)
-            {
-                FindAndChasePlayer();
-            }
-            else if (playerTransform != null)
-            {
-                HandleChasingLogic();
-            }
+            HandleChasingLogic();
         }
-        else
+        else if (!isChasing && isMoving && currentWaypointIndex < waypoints.Length && !isAggressiveMode)
         {
-            if (!isChasing && isMoving && currentWaypointIndex < waypoints.Length)
-            {
-                MoveTowardsWaypoint();
-            }
-            else if (isChasing && playerTransform != null)
-            {
-                HandleChasingLogic();
-            }
+            MoveTowardsWaypoint();
         }
 
-        if (!isAggressiveMode)
-        {
-            CheckPlayerDetection();
-        }
         UpdateFacingDirection();
     }
+
+    public void UpdateWaypoint(int waypoint)
+    {
+        CurrentWaypoint = waypoint;
+        Debug.Log($"Waypoint updated to: {CurrentWaypoint}");
+    }
+
     protected virtual void InitializeAggressiveTimer()
     {
         aggressiveTimer = Random.Range(minTimeUntilAggressive, maxTimeUntilAggressive);
@@ -245,53 +237,126 @@ public abstract class EnemyBase : MonoBehaviour
     protected void CheckPlayerDetection()
     {
         float direction = spriteRenderer.flipX ? -1 : 1;
-        Vector2 position = transform.position;
+        Vector2 position = transform.position + new Vector3(0, raycastYOffset, 0);
 
-        Debug.DrawRay(position, Vector2.right * direction * (isChasing ? extendedFrontRayLength : frontRayLength), Color.red);
+        float frontLength = isChasing ? extendedFrontRayLength : frontRayLength;
+
+        // Рисуем лучи для отладки
+        Debug.DrawRay(position, Vector2.right * direction * frontLength, Color.red);
         Debug.DrawRay(position, Vector2.right * -direction * backRayLength, Color.blue);
 
-        RaycastHit2D frontHit = Physics2D.Raycast(position, Vector2.right * direction,
-            isChasing ? extendedFrontRayLength : frontRayLength, playerLayer | hideLayer);
+        bool playerDetected = false;
+        Transform detectedPlayer = null;
 
-        RaycastHit2D backHit = Physics2D.Raycast(position, Vector2.right * -direction,
-            backRayLength, playerLayer | hideLayer);
+        // Проверяем наличие игрока спереди
+        RaycastHit2D[] frontHits = Physics2D.RaycastAll(position, Vector2.right * direction, frontLength);
+        foreach (RaycastHit2D hit in frontHits)
+        {
+            if (hit.collider.CompareTag("Player"))
+            {
+                GameObject playerObj = hit.collider.gameObject;
+                if (playerObj.layer == LayerMask.NameToLayer("Player"))
+                {
+                    // Игрок видим
+                    playerDetected = true;
+                    detectedPlayer = hit.collider.transform;
+                    break;
+                }
+                else if (playerObj.layer == LayerMask.NameToLayer("Hidden"))
+                {
+                    // Игрок спрятался, враг не видит его
+                    playerDetected = false;
+                    break;
+                }
+            }
+        }
 
-        HandlePlayerDetection(frontHit, backHit);
+        // Если игрок не обнаружен спереди, проверяем сзади
+        if (!playerDetected)
+        {
+            RaycastHit2D[] backHits = Physics2D.RaycastAll(position, Vector2.right * -direction, backRayLength);
+            foreach (RaycastHit2D hit in backHits)
+            {
+                if (hit.collider.CompareTag("Player"))
+                {
+                    GameObject playerObj = hit.collider.gameObject;
+                    if (playerObj.layer == LayerMask.NameToLayer("Player"))
+                    {
+                        playerDetected = true;
+                        detectedPlayer = hit.collider.transform;
+                        break;
+                    }
+                    else if (playerObj.layer == LayerMask.NameToLayer("Hidden"))
+                    {
+                        playerDetected = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Обработка результатов обнаружения
+        if (playerDetected && detectedPlayer != null)
+        {
+            playerTransform = detectedPlayer;
+            if (!isChasing)
+            {
+                StartChasing(playerTransform);
+            }
+        }
+        else if (isChasing && !isAggressiveMode)
+        {
+            StopChasing();
+        }
     }
+
 
     protected void HandlePlayerDetection(RaycastHit2D frontHit, RaycastHit2D backHit)
     {
-        if (!isChasing)
+        bool playerVisible = false;
+        bool playerHidden = false;
+        Transform detectedPlayerTransform = null;
+
+        if (frontHit.collider != null)
         {
-            if ((frontHit.collider != null || backHit.collider != null) &&
-                ((frontHit.collider?.gameObject.layer == LayerMask.NameToLayer("Player")) ||
-                 (backHit.collider?.gameObject.layer == LayerMask.NameToLayer("Player"))))
+            if (frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
             {
-                StartChasing(frontHit.collider != null ? frontHit.collider.transform : backHit.collider.transform);
+                playerVisible = true;
+                detectedPlayerTransform = frontHit.collider.transform;
+            }
+            else if (frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Hidden"))
+            {
+                playerHidden = true;
+            }
+        }
+
+        if (backHit.collider != null)
+        {
+            if (backHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
+            {
+                playerVisible = true;
+                detectedPlayerTransform = backHit.collider.transform;
+            }
+            else if (backHit.collider.gameObject.layer == LayerMask.NameToLayer("Hidden"))
+            {
+                playerHidden = true;
+            }
+        }
+
+        if (playerVisible && !playerHidden)
+        {
+            // Update playerTransform
+            playerTransform = detectedPlayerTransform;
+
+            if (!isChasing)
+            {
+                StartChasing(playerTransform);
             }
         }
         else
         {
-            bool playerVisible = false;
-            bool playerHidden = false;
-
-            if (frontHit.collider != null)
-            {
-                if (frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
-                    playerVisible = true;
-                else if (frontHit.collider.gameObject.layer == LayerMask.NameToLayer("Hidden"))
-                    playerHidden = true;
-            }
-
-            if (backHit.collider != null)
-            {
-                if (backHit.collider.gameObject.layer == LayerMask.NameToLayer("Player"))
-                    playerVisible = true;
-                else if (backHit.collider.gameObject.layer == LayerMask.NameToLayer("Hidden"))
-                    playerHidden = true;
-            }
-
-            if (!playerVisible || playerHidden)
+            // Player is not visible or is hidden
+            if (isChasing)
             {
                 if (isAggressiveMode)
                 {
@@ -304,62 +369,76 @@ public abstract class EnemyBase : MonoBehaviour
             }
         }
     }
+
     protected void StartChasing(Transform player)
     {
-        if (!isChasing)
+        if (player == null) return;
+
+        isChasing = true;
+        playerTransform = player;
+
+        // Сохраняем текущую позицию только если не в агрессивном режиме
+        if (!isAggressiveMode)
         {
-            isChasing = true;
-            playerTransform = player;
             lastWaypointPosition = transform.position;
             lastKnownWaypointIndex = currentWaypointIndex;
+        }
 
-            animator.SetBool("IsWalking", false);
-            animator.SetBool("IsChasing", true);
+        // Останавливаем текущие действия на точке
+        if (waypointActionCoroutine != null)
+        {
+            StopCoroutine(waypointActionCoroutine);
+            waypointActionCoroutine = null;
 
-            if (!isAggressiveMode)
+            if (actionParticles != null && actionParticles.isPlaying)
             {
-                //StopAllCoroutines();
+                actionParticles.Stop();
             }
         }
+
+        // Обновляем анимации
+        animator.SetBool("IsWalking", false);
+        animator.SetBool("IsChasing", true);
+        animator.SetBool("IsActing", false);
     }
+
 
     protected void HandleChasingLogic()
     {
+        if (playerTransform == null) return;
 
-        if (playerTransform != null)
+        // Проверяем, не спрятался ли игрок
+        if (playerTransform.gameObject.layer == LayerMask.NameToLayer("Hidden"))
         {
-            if (playerTransform.gameObject.layer == LayerMask.NameToLayer("Hidden"))
+            if (isAggressiveMode)
             {
-                // Player is hidden, exit aggressive mode
-                if (isAggressiveMode)
-                {
-                    DisableAggressiveMode();
-                }
-                else
-                {
-                    StopChasing();
-                }
-                return;
-            }
-            float yDifference = Mathf.Abs(playerTransform.position.y - transform.position.y);
-
-            if (yDifference > teleportSearchThresholdY)
-            {
-                if (!isMovingToTeleport)
-                {
-                    SearchForTeleport();
-                }
-                else if (currentTargetTeleport != null)
-                {
-                    MoveToTeleport();
-                }
+                DisableAggressiveMode();
             }
             else
             {
-                isMovingToTeleport = false;
-                currentTargetTeleport = null;
-                ChasePlayer();
+                StopChasing();
             }
+            return;
+        }
+
+        float yDifference = Mathf.Abs(playerTransform.position.y - transform.position.y);
+
+        if (yDifference > teleportSearchThresholdY)
+        {
+            if (!isMovingToTeleport)
+            {
+                SearchForTeleport();
+            }
+            else if (currentTargetTeleport != null)
+            {
+                MoveToTeleport();
+            }
+        }
+        else
+        {
+            isMovingToTeleport = false;
+            currentTargetTeleport = null;
+            ChasePlayer();
         }
     }
 
@@ -444,21 +523,24 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected void StopChasing()
     {
-        if (isChasing && !isAggressiveMode)
+        isChasing = false;
+        playerTransform = null;
+
+        // Обновляем анимации
+        animator.SetBool("IsChasing", false);
+        animator.SetBool("IsWalking", false);
+
+        // Останавливаем движение
+        rb.velocity = Vector2.zero;
+
+        // Возвращаемся к патрулированию только если не в агрессивном режиме
+        if (!isAggressiveMode)
         {
-            isChasing = false;
-            playerTransform = null;
-
-            animator.SetBool("IsChasing", false);
-            animator.SetBool("IsWalking", false);
-
-            rb.velocity = Vector2.zero;
-
             currentWaypointIndex = lastKnownWaypointIndex;
-
             MoveToNextWaypoint();
         }
     }
+
 
     private IEnumerator ReturnToLastPosition()
     {

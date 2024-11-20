@@ -31,7 +31,7 @@ public class ButcherEnemy : EnemyBase
         }
     }
 
-    private new void Update()
+    protected override void Update()
     {
         if (!isPlayerCaptured)
         {
@@ -72,18 +72,19 @@ public class ButcherEnemy : EnemyBase
                 PlayerController playerController = player.GetComponent<PlayerController>();
                 if (playerController != null)
                 {
-                    // Устанавливаем флаг, чтобы остановить врага
+                    // Set flag to stop the enemy
                     isPlayerCaptured = true;
 
-                    // Включаем анимацию смерти игрока
-                    playerController.TriggerDeathAnimation(() => SceneManager.LoadScene("MainMenu"));
+                    // Trigger the player's death sequence
+                    playerController.TriggerDeathSequence();
 
-                    // Останавливаем врага (можно добавить анимацию "победы" или "ожидания")
+                    // Stop the enemy's actions (you can add a "victory" or "waiting" animation)
                     StopEnemyActions();
                 }
             }
         }
     }
+
 
     private void StopEnemyActions()
     {

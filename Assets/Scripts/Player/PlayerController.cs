@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
     [SerializeField] private PulseController pulseController;
     [SerializeField] private GameObject playerLight; // Ссылка на дочерний объект света для отключения при прятании
-
+    [SerializeField] private GameObject deathCanvas;
     private float scale = 1f;
     private Rigidbody2D rb;
     private Vector2 movement;
@@ -157,6 +157,27 @@ public class PlayerController : MonoBehaviour
         if (playerLight != null)
         {
             playerLight.SetActive(true);
+        }
+    }
+    public void TriggerDeathSequence()
+    {
+        // Disable player controls
+        this.enabled = false;
+
+        // Stop movement
+        rb.velocity = Vector2.zero;
+
+        // Optionally, disable the player's sprite renderer to make them invisible
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = false;
+        }
+
+        // Activate the death canvas
+        if (deathCanvas != null)
+        {
+            deathCanvas.SetActive(true);
         }
     }
     public void TriggerDeathAnimation(System.Action onDeathComplete)
