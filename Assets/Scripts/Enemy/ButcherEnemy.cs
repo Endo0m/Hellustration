@@ -66,19 +66,26 @@ public class ButcherEnemy : EnemyBase
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
+            // Проверяем, находится ли игрок на слое "Hidden"
+            if (player.layer == LayerMask.NameToLayer("Hidden"))
+            {
+                // Игрок спрятан, не обнаруживаем и не захватываем его
+                return;
+            }
+
             float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
             if (distanceToPlayer <= detectionRadius)
             {
                 PlayerController playerController = player.GetComponent<PlayerController>();
                 if (playerController != null)
                 {
-                    // Set flag to stop the enemy
+                    // Устанавливаем флаг, чтобы остановить врага
                     isPlayerCaptured = true;
 
-                    // Trigger the player's death sequence
+                    // Запускаем последовательность смерти игрока
                     playerController.TriggerDeathSequence();
 
-                    // Stop the enemy's actions (you can add a "victory" or "waiting" animation)
+                    // Останавливаем действия врага
                     StopEnemyActions();
                 }
             }
