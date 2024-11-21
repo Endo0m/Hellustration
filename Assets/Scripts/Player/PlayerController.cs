@@ -116,7 +116,6 @@ public class PlayerController : MonoBehaviour
         transform.position = hideout.position;
         gameObject.layer = LayerMask.NameToLayer("Hidden");
         rb.isKinematic = true;
-
         // Установка направления (лицо влево или вправо)
         transform.localScale = new Vector3(faceRight ? scale : -scale, scale, scale);
         animator.SetBool("isWalking", false);
