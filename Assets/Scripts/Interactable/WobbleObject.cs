@@ -7,12 +7,14 @@ public class WobbleObject : MonoBehaviour
     [SerializeField] private Transform dropPoint; // Точка, в которой выпадет предмет
     [SerializeField] private Vector2 forceDirection = new Vector2(1f, 1f); // Направление толчка
     [SerializeField] private float forceStrength = 5f; // Сила толчка
-
+    [SerializeField] private string openSoundKey; // Ключ для звука открытия
+    private AudioSource audioSource;
     private bool hasDroppedItem = false; // Флаг, предотвращающий повторное выпадение
 
     public void Interact(GameObject interactor)
     {
         if (hasDroppedItem) return; // Предотвращаем повторное взаимодействие
+        SoundManager.Instance.PlaySound(openSoundKey, audioSource);
 
         // Запуск анимации покачивания
         if (animator != null)

@@ -3,13 +3,18 @@ using System.Collections;
 
 public class Door : MonoBehaviour, IInteractable
 {
-    [SerializeField] private Animator doorAnimator;
     [SerializeField] private GameObject[] transitionTriggers;
     [SerializeField] private float autoCloseDelay = 3f;
+    [SerializeField] private string openSoundKey; // Ключ для звука открытия
+    [SerializeField] private string closeSoundKey; // Ключ для звука закрытия
+    private AudioSource audioSource;
+    private Animator doorAnimator;
     private bool isOpen = false;
 
     private void Start()
     {
+        doorAnimator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
         // Отключаем все триггеры при запуске
         if (transitionTriggers != null)
         {
@@ -47,6 +52,8 @@ public class Door : MonoBehaviour, IInteractable
 
     private void OpenDoor()
     {
+        SoundManager.Instance.PlaySound(openSoundKey, audioSource);
+
         isOpen = true;
         doorAnimator.SetTrigger("OpenDoor");
         if (transitionTriggers != null)
@@ -65,6 +72,8 @@ public class Door : MonoBehaviour, IInteractable
 
     private void CloseDoor()
     {
+        SoundManager.Instance.PlaySound(closeSoundKey, audioSource);
+
         isOpen = false;
         doorAnimator.SetTrigger("CloseDoor");
         if (transitionTriggers != null)

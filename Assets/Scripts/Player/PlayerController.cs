@@ -47,8 +47,15 @@ public class PlayerController : MonoBehaviour
         bool isShiftPressed = Input.GetKey(KeyCode.LeftShift);
         float currentSpeed = isShiftPressed ? runSpeed : moveSpeed;
 
-        // Обновление направления вращения
-        RotateToMouse();
+        // Поворот спрайта в направлении движения
+        if (movement.x != 0)
+        {
+            transform.localScale = new Vector3(
+                movement.x > 0 ? scale : -scale,
+                scale,
+                scale
+            );
+        }
 
         // Анимация на основе скорости
         float velocityMagnitude = Mathf.Abs(rb.velocity.x);
@@ -82,17 +89,6 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-    }
-
-    private void RotateToMouse()
-    {
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3 direction = (mousePosition - transform.position).normalized;
-
-        if (direction.x < 0)
-            transform.localScale = new Vector3(-scale, scale, scale); // Поворот влево
-        else if (direction.x > 0)
-            transform.localScale = new Vector3(scale, scale, scale); // Поворот вправо
     }
 
     private void Interact()
@@ -159,6 +155,7 @@ public class PlayerController : MonoBehaviour
             playerLight.SetActive(true);
         }
     }
+
     public void TriggerDeathSequence()
     {
         // Disable player controls
@@ -180,6 +177,7 @@ public class PlayerController : MonoBehaviour
             deathCanvas.SetActive(true);
         }
     }
+
     public void TriggerDeathAnimation(System.Action onDeathComplete)
     {
         animator.SetTrigger("Die"); // Предполагается, что у вас есть триггер "Die" для анимации смерти
@@ -205,7 +203,6 @@ public class PlayerController : MonoBehaviour
 
         onDeathComplete?.Invoke();
     }
-
 
     private void OnDrawGizmosSelected()
     {
