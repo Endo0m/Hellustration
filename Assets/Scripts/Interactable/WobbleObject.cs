@@ -11,6 +11,10 @@ public class WobbleObject : MonoBehaviour
     private AudioSource audioSource;
     private bool hasDroppedItem = false; // ‘лаг, предотвращающий повторное выпадение
 
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
     public void Interact(GameObject interactor)
     {
         if (hasDroppedItem) return; // ѕредотвращаем повторное взаимодействие

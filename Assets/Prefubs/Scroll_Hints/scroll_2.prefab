@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7973032884437324740}
   - component: {fileID: 1970721869138774469}
   - component: {fileID: 18412954089796228}
+  - component: {fileID: 5798859489605991314}
   m_Layer: 10
   m_Name: scroll_2
   m_TagString: Untagged
@@ -103,6 +104,9 @@ MonoBehaviour:
   hintText: "Link its past with the present and then you\u2019ll help it see what
     it really is"
   hintUIPrefab: {fileID: 2953904362354380284, guid: 402f658b7f3a44c4982220abcf15ee4f, type: 3}
+  collectSoundKey: hint_collect
+  shadowSoundKey: shadow_hint
+  fadeDuration: 1
 --- !u!61 &7973032884437324740
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -135,7 +139,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.30538684, y: 0}
+  m_Offset: {x: 0.11154765, y: 0.0038967133}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -146,7 +150,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.16005957, y: 0.8125}
+  m_Size: {x: 0.99392855, y: 4.20253}
   m_EdgeRadius: 0
 --- !u!50 &1970721869138774469
 Rigidbody2D:
@@ -207,7 +211,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.24548483, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -218,5 +222,18 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.45, y: 4.26}
+  m_Size: {x: 0.1485405, y: 4.26}
   m_EdgeRadius: 0
+--- !u!114 &5798859489605991314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 375818675387596416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15318032c02b98b4ca100bc9ba2e9875, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fallSoundKey: fall_hint

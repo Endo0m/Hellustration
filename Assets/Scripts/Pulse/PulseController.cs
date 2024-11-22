@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class PulseController : MonoBehaviour
 {
     [SerializeField] private PlayerPulseUI playerPulseUI;
-    [SerializeField] private TextMeshProUGUI textMeshPro;
     private int pulseCounter = 60;
     private Coroutine pulseIncreaseCoroutine;
 
@@ -21,11 +20,7 @@ public class PulseController : MonoBehaviour
         {
             playerPulseUI.StopPulse();
         }
-        textMeshPro.text = pulseCounter.ToString();
-        if (pulseCounter > 800)
-        {
-            playerPulseUI.GameOver();
-        }
+       
     }
 
     private IEnumerator PulseCoroutine()
@@ -88,7 +83,6 @@ public class PulseController : MonoBehaviour
     public void UpPulseCounter(int amount = 1)
     {
         pulseCounter += amount; // Увеличиваем пульс без проверки на 60
-        textMeshPro.text = pulseCounter.ToString(); // Обновляем текст
     }
 
 }

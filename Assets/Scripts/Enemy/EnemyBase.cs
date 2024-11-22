@@ -4,52 +4,17 @@ using UnityEngine;
 
 public abstract class EnemyBase : MonoBehaviour
 {
+    // Физика и анимация
     protected Rigidbody2D rb;
     protected Animator animator;
-    [SerializeField] protected WaypointData[] waypoints;
+    protected SpriteRenderer spriteRenderer;
+
+    // Параметры движения
     [SerializeField] protected float moveSpeed = 2f;
     [SerializeField] protected float chaseSpeed = 4f;
     [SerializeField] protected float aggressiveChaseSpeed = 6f;
-    [SerializeField] protected ParticleSystem actionParticles;
-    [SerializeField] protected LayerMask playerLayer;
-    [SerializeField] protected LayerMask hideLayer;
 
-
-    [SerializeField] protected float minTimeUntilAggressive = 180f; // Минимальное время (3 минуты)
-    [SerializeField] protected float maxTimeUntilAggressive = 300f; // Максимальное время (5 минут)
-    [SerializeField] protected float chaseDuration = 30f; // Длительность преследования
-    protected float currentChaseDuration; // Текущее время преследования
-    protected bool isChaseTimerActive = false; // Активен ли таймер преследования
-    protected float aggressiveTimer;
-    protected bool isAggressiveMode = false;
-    protected AudioSource audioSource;
-    protected SoundManager soundManager;
-    [SerializeField] protected float stepSoundInterval = 0.5f; // Интервал между звуками шагов
-    protected float lastStepTime;
-    [SerializeField] private float raycastYOffset = 0f; // Смещение луча по вертикали
-
-    [SerializeField] protected float backRayLength = 5f;
-    [SerializeField] protected float frontRayLength = 8f;
-    [SerializeField] protected float extendedFrontRayLength = 12f;
-    protected int lastKnownWaypointIndex = 0;
-    protected int currentWaypointIndex = 0;
-    protected bool isMoving = true;
-    protected bool isChasing = false;
-    protected Vector3 lastWaypointPosition;
-    protected Transform playerTransform;
-    protected SpriteRenderer spriteRenderer;
-    protected Vector2 facingDirection;
-    [SerializeField] private float teleportSearchThresholdY = 3f; // Пороговое значение разницы по Y для поиска телепорта
-    [SerializeField] private float teleportReachDistance = 0.5f; // Расстояние, на котором считается, что враг достиг телепорта
-    [SerializeField] private float teleportCooldown = 2f; // Кулдаун между использованиями телепортов
-    private float lastTeleportTime;
-    private TeleportZone currentTargetTeleport;
-    private bool isMovingToTeleport = false;
-    private Coroutine waypointActionCoroutine;
-
-
-    public int CurrentWaypoint { get; private set; }
-
+    // Система точек маршрута
     [System.Serializable]
     public struct WaypointData
     {
@@ -57,36 +22,106 @@ public abstract class EnemyBase : MonoBehaviour
         public bool enableParticles;
         public bool openDoor;
         public float waitDuration;
+        public string waypointSoundKey; // Ключ звука для точки
+        public bool loopWaypointSound; // Зацикливать ли звук на точке
     }
+    [SerializeField] protected WaypointData[] waypoints;
+
+    // Эффекты
+    [SerializeField] protected ParticleSystem actionParticles;
+
+    // Слои
+    [SerializeField] protected LayerMask playerLayer;
+    [SerializeField] protected LayerMask hideLayer;
+
+    // Таймеры агрессивного режима
+    [SerializeField] protected float minTimeUntilAggressive = 180f;
+    [SerializeField] protected float maxTimeUntilAggressive = 300f;
+    [SerializeField] protected float chaseDuration = 30f;
+    protected float currentChaseDuration;
+    protected bool isChaseTimerActive = false;
+    protected float aggressiveTimer;
+    protected bool isAggressiveMode = false;
+
+    // Система звуков
+    [Header("Sound Settings")]
+    protected Dictionary<string, AudioSource> audioSources = new Dictionary<string, AudioSource>();
+    protected SoundManager soundManager;
+    [SerializeField] protected string walkSoundKey = "enemy_walk";
+    [SerializeField] protected string runSoundKey = "enemy_run";
+    [SerializeField] protected float stepSoundInterval = 0.5f;
+    [SerializeField] protected string detectionSoundKey = "enemy_detect";
+    [SerializeField] protected float detectionSoundCooldown = 3f;
+    [SerializeField] protected string aggressiveSoundKey = "enemy_aggressive";
+    protected float lastStepTime;
+    protected float lastDetectionSoundTime;
+    private AudioSource currentLoopingSource;
+
+    // Raycast параметры
+    [SerializeField] protected float backRayLength = 5f;
+    [SerializeField] protected float frontRayLength = 8f;
+    [SerializeField] protected float extendedFrontRayLength = 12f;
+    [SerializeField] private float raycastYOffset = 0f;
+
+    // Состояние и позиция
+    protected int lastKnownWaypointIndex = 0;
+    protected int currentWaypointIndex = 0;
+    protected bool isMoving = true;
+    protected bool isChasing = false;
+    protected Vector3 lastWaypointPosition;
+    protected Transform playerTransform;
+    protected Vector2 facingDirection;
+    public int CurrentWaypoint { get; private set; }
+
+    // Телепорт параметры
+    [SerializeField] private float teleportSearchThresholdY = 3f;
+    [SerializeField] private float teleportReachDistance = 0.5f;
+    [SerializeField] private float teleportCooldown = 2f;
+    private float lastTeleportTime;
+    private TeleportZone currentTargetTeleport;
+    private bool isMovingToTeleport = false;
+    private Coroutine waypointActionCoroutine;
 
     protected virtual void Start()
     {
+        // Базовая инициализация компонентов
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        // Добавляем инициализацию звука
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
         soundManager = FindObjectOfType<SoundManager>();
+
+        // Инициализация системы звуков
+        InitializeAudioSources();
 
         InitializeAggressiveTimer();
         if (waypoints.Length > 0)
         {
             MoveToNextWaypoint();
         }
-        audioSource.spatialBlend = 1;
     }
 
+    private void InitializeAudioSources()
+    {
+        CreateAudioSource("footsteps", false);
+        CreateAudioSource("detection", false);
+        CreateAudioSource("aggressive", false);
+        CreateAudioSource("waypoint", true);
+    }
+
+    private void CreateAudioSource(string key, bool isLooping)
+    {
+        AudioSource source = gameObject.AddComponent<AudioSource>();
+        source.spatialBlend = 1f;
+        source.maxDistance = 40f;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.loop = isLooping;
+        audioSources[key] = source;
+    }
 
     protected virtual void Update()
     {
         if (!isAggressiveMode)
         {
-            // Обновление таймера агрессивного режима
             aggressiveTimer -= Time.deltaTime;
             if (aggressiveTimer <= 0)
             {
@@ -95,7 +130,6 @@ public abstract class EnemyBase : MonoBehaviour
         }
         else if (isChaseTimerActive)
         {
-            // Обновление таймера преследования в агрессивном режиме
             currentChaseDuration -= Time.deltaTime;
             if (currentChaseDuration <= 0)
             {
@@ -104,11 +138,8 @@ public abstract class EnemyBase : MonoBehaviour
         }
 
         CheckFootsteps();
-
-        // Проверка обнаружения игрока ПЕРЕД логикой движения
         CheckPlayerDetection();
 
-        // Логика движения
         if (isChasing && playerTransform != null)
         {
             HandleChasingLogic();
@@ -121,6 +152,91 @@ public abstract class EnemyBase : MonoBehaviour
         UpdateFacingDirection();
     }
 
+    protected void CheckFootsteps()
+    {
+        if ((isMoving || isChasing) && rb.velocity.magnitude > 0.1f)
+        {
+            if (Time.time - lastStepTime >= stepSoundInterval)
+            {
+                PlayFootstepSound();
+                lastStepTime = Time.time;
+            }
+        }
+    }
+
+    protected virtual void PlayFootstepSound()
+    {
+        string soundKey = isChasing ? runSoundKey : walkSoundKey;
+        PlaySound("footsteps", soundKey, false);
+    }
+
+    protected void PlaySound(string sourceKey, string soundKey, bool loop)
+    {
+        if (string.IsNullOrEmpty(soundKey)) return;
+
+        if (audioSources.TryGetValue(sourceKey, out AudioSource source))
+        {
+            source.loop = loop;
+            if (soundManager != null)
+            {
+                if (loop)
+                {
+                    AudioClip clip = soundManager.GetAudioClip(soundKey);
+                    if (clip != null)
+                    {
+                        source.clip = clip;
+                        source.Play();
+                    }
+                }
+                else
+                {
+                    soundManager.PlaySound(soundKey, source);
+                }
+            }
+        }
+    }
+
+    private void PlayWaypointSound(string soundKey, bool loop)
+    {
+        if (string.IsNullOrEmpty(soundKey)) return;
+
+        StopWaypointSound();
+
+        if (audioSources.TryGetValue("waypoint", out AudioSource source))
+        {
+            source.loop = loop;
+            if (soundManager != null)
+            {
+                AudioClip clip = soundManager.GetAudioClip(soundKey);
+                if (clip != null)
+                {
+                    source.clip = clip;
+                    source.Play();
+                    currentLoopingSource = source;
+                }
+            }
+        }
+    }
+
+    private void StopWaypointSound()
+    {
+        if (currentLoopingSource != null && currentLoopingSource.isPlaying)
+        {
+            currentLoopingSource.Stop();
+            currentLoopingSource = null;
+        }
+    }
+
+    private void PlayDetectionSound()
+    {
+        if (Time.time - lastDetectionSoundTime >= detectionSoundCooldown)
+        {
+            PlaySound("detection", detectionSoundKey, false);
+            lastDetectionSoundTime = Time.time;
+        }
+    }
+
+
     public void UpdateWaypoint(int waypoint)
     {
         CurrentWaypoint = waypoint;
@@ -131,28 +247,7 @@ public abstract class EnemyBase : MonoBehaviour
     {
         aggressiveTimer = Random.Range(minTimeUntilAggressive, maxTimeUntilAggressive);
     }
-    protected void CheckFootsteps()
-    {
-        // Проверяем, движется ли враг
-        if ((isMoving || isChasing) && rb.velocity.magnitude > 0.1f)
-        {
-            // Проверяем, прошло ли достаточно времени с последнего звука
-            if (Time.time - lastStepTime >= stepSoundInterval)
-            {
-                PlayFootstepSound();
-                lastStepTime = Time.time;
-            }
-        }
-    }
-    protected virtual void PlayFootstepSound()
-    {
-        if (soundManager != null && audioSource != null)
-        {
-            // Воспроизводим разные звуки в зависимости от состояния
-            string soundKey = isChasing ? "enemy_run" : "enemy_walk";
-            soundManager.PlaySound(soundKey, audioSource);
-        }
-    }
+
     protected void EnableAggressiveMode()
     {
         // Check if player is available before enabling aggressive mode
@@ -370,37 +465,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
-    protected void StartChasing(Transform player)
-    {
-        if (player == null) return;
-
-        isChasing = true;
-        playerTransform = player;
-
-        // Сохраняем текущую позицию только если не в агрессивном режиме
-        if (!isAggressiveMode)
-        {
-            lastWaypointPosition = transform.position;
-            lastKnownWaypointIndex = currentWaypointIndex;
-        }
-
-        // Останавливаем текущие действия на точке
-        if (waypointActionCoroutine != null)
-        {
-            StopCoroutine(waypointActionCoroutine);
-            waypointActionCoroutine = null;
-
-            if (actionParticles != null && actionParticles.isPlaying)
-            {
-                actionParticles.Stop();
-            }
-        }
-
-        // Обновляем анимации
-        animator.SetBool("IsWalking", false);
-        animator.SetBool("IsChasing", true);
-        animator.SetBool("IsActing", false);
-    }
+  
 
 
     protected void HandleChasingLogic()
@@ -521,25 +586,7 @@ public abstract class EnemyBase : MonoBehaviour
 
 
 
-    protected void StopChasing()
-    {
-        isChasing = false;
-        playerTransform = null;
 
-        // Обновляем анимации
-        animator.SetBool("IsChasing", false);
-        animator.SetBool("IsWalking", false);
-
-        // Останавливаем движение
-        rb.velocity = Vector2.zero;
-
-        // Возвращаемся к патрулированию только если не в агрессивном режиме
-        if (!isAggressiveMode)
-        {
-            currentWaypointIndex = lastKnownWaypointIndex;
-            MoveToNextWaypoint();
-        }
-    }
 
 
     private IEnumerator ReturnToLastPosition()
@@ -577,19 +624,26 @@ public abstract class EnemyBase : MonoBehaviour
         isMoving = false;
         WaypointData currentData = waypoints[currentWaypointIndex];
 
+        // Воспроизводим звук точки, если он задан
+        if (!string.IsNullOrEmpty(currentData.waypointSoundKey))
+        {
+            PlayWaypointSound(currentData.waypointSoundKey, currentData.loopWaypointSound);
+        }
+
         if (currentData.enableParticles && actionParticles != null)
         {
             actionParticles.Play();
         }
 
         animator.SetBool("IsActing", true);
-        //yield return new WaitForSeconds(currentData.waitDuration);
         yield return new WaitForSeconds(currentData.waitDuration);
         while (isAggressiveMode || isChasing)
         {
             yield return new WaitForSeconds(0.1f);
         }
         animator.SetBool("IsActing", false);
+
+        StopWaypointSound();
 
         if (currentData.enableParticles && actionParticles != null)
         {
@@ -606,10 +660,68 @@ public abstract class EnemyBase : MonoBehaviour
         }
 
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-
         MoveToNextWaypoint();
     }
 
+    protected void StartChasing(Transform player)
+    {
+        if (player == null) return;
+
+        isChasing = true;
+        playerTransform = player;
+        PlayDetectionSound();
+        StopWaypointSound();
+
+        if (!isAggressiveMode)
+        {
+            lastWaypointPosition = transform.position;
+            lastKnownWaypointIndex = currentWaypointIndex;
+        }
+
+        if (waypointActionCoroutine != null)
+        {
+            StopCoroutine(waypointActionCoroutine);
+            waypointActionCoroutine = null;
+
+            if (actionParticles != null && actionParticles.isPlaying)
+            {
+                actionParticles.Stop();
+            }
+        }
+
+        animator.SetBool("IsWalking", false);
+        animator.SetBool("IsChasing", true);
+        animator.SetBool("IsActing", false);
+    }
+
+    protected void StopChasing()
+    {
+        isChasing = false;
+        playerTransform = null;
+
+        animator.SetBool("IsChasing", false);
+        animator.SetBool("IsWalking", false);
+
+        rb.velocity = Vector2.zero;
+
+        if (!isAggressiveMode)
+        {
+            currentWaypointIndex = lastKnownWaypointIndex;
+            MoveToNextWaypoint();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        StopWaypointSound();
+        foreach (var source in audioSources.Values)
+        {
+            if (source != null)
+            {
+                source.Stop();
+            }
+        }
+    }
     protected void MoveToNextWaypoint()
     {
         if (!isAggressiveMode && currentWaypointIndex < waypoints.Length)

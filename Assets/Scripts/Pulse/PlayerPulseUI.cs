@@ -9,7 +9,6 @@ public class PlayerPulseUI : MonoBehaviour
     [SerializeField] public Image pulseImage; // UI-изображение, которое будет мигать
     [SerializeField] private float pulseDuration = 0.5f; // Длительность одного мигания
     [SerializeField] private float pulseScale = 1.2f; // Коэффициент масштабирования мигания
-    [SerializeField] private GameObject overGame;
     private Tween currentPulseTween;
     private bool isPulseRunning = false;
 
@@ -46,8 +45,5 @@ public class PlayerPulseUI : MonoBehaviour
         }
     }
 
-    public void GameOver()
-    {
-        overGame.SetActive(true);
-    }
+   
 }

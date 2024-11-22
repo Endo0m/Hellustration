@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5412436039819689746}
   - component: {fileID: 4217788959550961274}
   - component: {fileID: 5828085505712433892}
+  - component: {fileID: -6963295269328594935}
   m_Layer: 10
   m_Name: scroll_1
   m_TagString: Untagged
@@ -102,6 +103,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hintText: Bless the dead who died at its hand.
   hintUIPrefab: {fileID: 2953904362354380284, guid: 498aa713f47b65a4baea5b5570047f59, type: 3}
+  collectSoundKey: hint_collect
+  shadowSoundKey: hint_open_Shadow_1
+  fadeDuration: 1
 --- !u!61 &5412436039819689746
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -209,3 +213,16 @@ CapsuleCollider2D:
   m_Offset: {x: 0.109286785, y: 0.034773827}
   m_Size: {x: 0.7346697, y: 4.07123}
   m_Direction: 0
+--- !u!114 &-6963295269328594935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2355224457035079389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15318032c02b98b4ca100bc9ba2e9875, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fallSoundKey: fall_hint

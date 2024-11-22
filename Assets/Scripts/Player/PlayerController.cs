@@ -3,39 +3,57 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f; // Скорость движения игрока
-    [SerializeField] private float runSpeed = 8f; // Скорость бега
-    [SerializeField] private float interactionRadius = 1f; // Радиус взаимодействия с объектами
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float runSpeed = 8f;
+    [SerializeField] private float interactionRadius = 1f;
+
+    [Header("Components")]
     [SerializeField] private PulseController pulseController;
-    [SerializeField] private GameObject playerLight; // Ссылка на дочерний объект света для отключения при прятании
+    [SerializeField] private GameObject playerLight;
     [SerializeField] private GameObject deathCanvas;
+
+    [Header("Sound Settings")]
+    [SerializeField] private string walkSoundKey = "player_walk";
+    [SerializeField] private string runSoundKey = "player_run";
+    [SerializeField] private float walkStepInterval = 0.5f;
+    [SerializeField] private float runStepInterval = 0.3f;
+
     private float scale = 1f;
     private Rigidbody2D rb;
     private Vector2 movement;
     private bool isHidden = false;
     private float lastTime = 0f;
+    private float lastStepTime = 0f;
     public bool IsHidden { get { return isHidden; } }
 
     private AudioSource audioSource;
     private Animator animator;
+    private SoundManager soundManager;
 
     private void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         audioSource = GetComponent<AudioSource>();
+        soundManager = FindObjectOfType<SoundManager>();
 
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+
+        // Настройка пространственного звука
+        audioSource.spatialBlend = 1f;
+        audioSource.maxDistance = 25f;
+        audioSource.rolloffMode = AudioRolloffMode.Linear;
     }
 
     private void Update()
     {
         if (isHidden)
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(0))
             {
                 Reveal();
             }
@@ -57,18 +75,41 @@ public class PlayerController : MonoBehaviour
             );
         }
 
-        // Анимация на основе скорости
+        // Анимация и звуки на основе скорости
         float velocityMagnitude = Mathf.Abs(rb.velocity.x);
-        animator.SetBool("isRunning", velocityMagnitude > moveSpeed);
-        animator.SetBool("isWalking", velocityMagnitude > 0 && velocityMagnitude <= moveSpeed);
+        bool isRunning = velocityMagnitude > moveSpeed;
+        bool isWalking = velocityMagnitude > 0 && velocityMagnitude <= moveSpeed;
+
+        animator.SetBool("isRunning", isRunning);
+        animator.SetBool("isWalking", isWalking);
+
+        // Проверка и воспроизведение звуков шагов
+        if ((isWalking || isRunning) && !isHidden)
+        {
+            float currentInterval = isRunning ? runStepInterval : walkStepInterval;
+            if (Time.time - lastStepTime >= currentInterval)
+            {
+                PlayStepSound(isRunning);
+                lastStepTime = Time.time;
+            }
+        }
 
         if (Input.GetKeyDown(KeyCode.E))
         {
             Interact();
         }
 
-        // Применяем движение в FixedUpdate для физического взаимодействия
+        // Применяем движение
         rb.velocity = new Vector2(movement.x * currentSpeed, rb.velocity.y);
+    }
+
+    private void PlayStepSound(bool isRunning)
+    {
+        if (soundManager != null && audioSource != null)
+        {
+            string soundKey = isRunning ? runSoundKey : walkSoundKey;
+            soundManager.PlaySound(soundKey, audioSource);
+        }
     }
 
     private void FixedUpdate()

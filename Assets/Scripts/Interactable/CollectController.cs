@@ -8,14 +8,26 @@ using DG.Tweening;
 public class CollectController : MonoBehaviour
 {
     [Header("Inventory Settings")]
-    [SerializeField] private Transform inventoryUIParent; // Родитель для слотов с обычными предметами
-    [SerializeField] private int totalItemsToCollect = 3; // Количество предметов для активации перетаскивания
+    [SerializeField] private Transform inventoryUIParent;
+    [SerializeField] private int totalItemsToCollect = 3;
 
     [Header("Hint Inventory Settings")]
-    [SerializeField] private Transform hintInventoryUIParent; // Родитель для слотов с подсказками
-    [SerializeField] private GameObject hintSlotPrefab; // Префаб слота для подсказок
-    [SerializeField] private GameObject hintPanel; // Панель для отображения подсказок
-    [SerializeField] private TextMeshProUGUI hintTextComponent; // Компонент для текста подсказки
+    [SerializeField] private Transform hintInventoryUIParent;
+    [SerializeField] private GameObject hintSlotPrefab;
+    [SerializeField] private GameObject hintPanel;
+    [SerializeField] private TextMeshProUGUI hintTextComponent;
+    [Header("Hint Panel Settings")]
+    [SerializeField] private Button closeHintButton; // Кнопка закрытия подсказки
+    [SerializeField] private float hintPanelAnimationDuration = 0.3f;
+
+    [Header("Shadow Settings")]
+    [SerializeField] private ShadowFollower shadow;
+
+    private bool isReadingHint = false;
+    [Header("Sound Settings")]
+    [SerializeField] private string hintOpenSoundKey = "hint_open"; // Звук открытия подсказки
+    private AudioSource audioSource;
+    private SoundManager soundManager;
 
     private Dictionary<string, DraggableUIItem> inventoryItems = new Dictionary<string, DraggableUIItem>();
     private List<HintItem> hintInventory = new List<HintItem>();
@@ -23,7 +35,11 @@ public class CollectController : MonoBehaviour
 
     private void Start()
     {
-        // Инициализация существующих слотов с DraggableUIItem
+        // Инициализация звуковой системы
+        audioSource = gameObject.AddComponent<AudioSource>();
+        soundManager = FindObjectOfType<SoundManager>();
+
+        // Инициализация существующих слотов
         foreach (Transform child in inventoryUIParent)
         {
             DraggableUIItem draggableItem = child.GetComponent<DraggableUIItem>();
@@ -32,28 +48,37 @@ public class CollectController : MonoBehaviour
                 inventoryItems[draggableItem.ItemName] = draggableItem;
             }
         }
+        if (closeHintButton != null)
+        {
+            closeHintButton.onClick.AddListener(CloseHint);
+        }
     }
 
-    // Удаляем метод Update(), так как взаимодействие теперь обрабатывается в InteractionController
+    private void Update()
+    {
+        // Опционально: добавляем возможность закрытия по клавише Escape
+        if (isReadingHint && Input.GetKeyDown(KeyCode.Escape))
+        {
+            CloseHint();
+        }
+    }
 
     public void AddItemToInventory(CollectibleItem item)
     {
-        string itemName = item.ItemName;
+        // Воспроизводим звук подбора предмета
+        PlaySound(item.CollectSoundKey);
 
+        string itemName = item.ItemName;
         if (inventoryItems.ContainsKey(itemName))
         {
-            // Обновляем изображение в слоте
             DraggableUIItem uiItem = inventoryItems[itemName];
             uiItem.UpdateSprite(item.ItemSprite);
             collectedItemCount++;
 
-            // Проверяем, можно ли активировать перетаскивание
             if (collectedItemCount >= totalItemsToCollect)
             {
                 EnableItemDragging();
             }
-
-            // Плавное исчезновение предмета
             item.FadeOutAndDisable();
         }
         else
@@ -64,29 +89,95 @@ public class CollectController : MonoBehaviour
 
     public void AddHintToInventory(HintItem hintItem)
     {
+        // Воспроизводим звук подбора подсказки
+        PlaySound(hintItem.CollectSoundKey);
+
         hintInventory.Add(hintItem);
         DisplayHintInUI(hintItem);
     }
 
-    private void DisplayHintInUI(HintItem hintItem)
+    private void ShowHint(string hintText, HintItem hintItem)
     {
-        // Создание слота для подсказки в UI
-        GameObject slot = Instantiate(hintSlotPrefab, hintInventoryUIParent);
-        Button button = slot.AddComponent<Button>();
-        button.onClick.AddListener(() => ShowHint(hintItem.HintText));
-    }
+        isReadingHint = true;
+        PauseGame();
 
-    private void ShowHint(string hintText)
-    {
+        PlaySound(hintOpenSoundKey);
+
         hintPanel.SetActive(true);
         hintTextComponent.text = hintText;
+
+        // Анимация появления панели
+        hintPanel.transform.localScale = Vector3.zero;
+        hintPanel.transform.DOScale(Vector3.one, hintPanelAnimationDuration)
+            .SetEase(Ease.OutBack)
+            .SetUpdate(true); // Важно: анимация будет работать при остановленном времени
+
+        // Проверяем, первое ли это прочтение подсказки
+        if (!hintItem.WasReadFirstTime)
+        {
+            if (shadow != null)
+            {
+                shadow.AppearAndSpeak(hintItem.ShadowSoundKey);
+            }
+            hintItem.SetReadFirstTime();
+        }
     }
 
+    private void CloseHint()
+    {
+        if (!isReadingHint) return;
+
+        // Анимация исчезновения панели
+        hintPanel.transform.DOScale(Vector3.zero, hintPanelAnimationDuration)
+            .SetEase(Ease.InBack)
+            .SetUpdate(true) // Анимация работает при остановленном времени
+            .OnComplete(() =>
+            {
+                hintPanel.SetActive(false);
+                ResumeGame();
+                isReadingHint = false;
+            });
+    }
+
+    private void PauseGame()
+    {
+        Time.timeScale = 0f;
+    }
+
+    private void ResumeGame()
+    {
+        Time.timeScale = 1f;
+    }
+
+    private void OnDestroy()
+    {
+        // Обеспечиваем восстановление времени при уничтожении объекта
+        Time.timeScale = 1f;
+    }
+
+    private void DisplayHintInUI(HintItem hintItem)
+    {
+        GameObject slot = Instantiate(hintSlotPrefab, hintInventoryUIParent);
+        Button button = slot.GetComponent<Button>();
+        if (button == null)
+        {
+            button = slot.AddComponent<Button>();
+        }
+        button.onClick.AddListener(() => ShowHint(hintItem.HintText, hintItem));
+    }
     private void EnableItemDragging()
     {
         foreach (var item in inventoryItems.Values)
         {
             item.SetDraggable(true);
+        }
+    }
+
+    private void PlaySound(string soundKey)
+    {
+        if (soundManager != null && audioSource != null && !string.IsNullOrEmpty(soundKey))
+        {
+            soundManager.PlaySound(soundKey, audioSource);
         }
     }
 }
