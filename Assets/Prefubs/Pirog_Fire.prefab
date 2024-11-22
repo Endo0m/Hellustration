@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lifespan: 5
-  requiredWaypoint: 7
+  requiredWaypoint: 6
 --- !u!114 &4421702599224439863
 MonoBehaviour:
   m_ObjectHideFlags: 0

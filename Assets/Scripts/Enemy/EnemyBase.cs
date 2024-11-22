@@ -39,9 +39,9 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected float maxTimeUntilAggressive = 300f;
     [SerializeField] protected float chaseDuration = 30f;
     protected float currentChaseDuration;
-    protected bool isChaseTimerActive = false;
+    protected virtual bool isAggressiveMode { get; set; }
+    protected virtual bool isChaseTimerActive { get; set; }
     protected float aggressiveTimer;
-    protected bool isAggressiveMode = false;
 
     // —истема звуков
     [Header("Sound Settings")]
@@ -135,11 +135,17 @@ public abstract class EnemyBase : MonoBehaviour
             {
                 DisableAggressiveMode();
             }
+            else
+            {
+                // ƒобавл€ем €вный поиск игрока в агрессивном режиме
+                FindAndChasePlayer();
+            }
         }
 
         CheckFootsteps();
         CheckPlayerDetection();
 
+        // ћен€ем условие на проверку isChasing
         if (isChasing && playerTransform != null)
         {
             HandleChasingLogic();
@@ -248,35 +254,28 @@ public abstract class EnemyBase : MonoBehaviour
         aggressiveTimer = Random.Range(minTimeUntilAggressive, maxTimeUntilAggressive);
     }
 
-    protected void EnableAggressiveMode()
+    protected virtual void EnableAggressiveMode()
     {
-        // Check if player is available before enabling aggressive mode
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player == null || player.layer != LayerMask.NameToLayer("Player"))
+        // ѕровер€ем только на Hidden слой
+        if (player == null || player.layer == LayerMask.NameToLayer("Hidden"))
         {
-            // Player not found or is hidden, reset aggressive timer
             InitializeAggressiveTimer();
             return;
         }
 
         isAggressiveMode = true;
-        isMoving = false;
 
         if (waypointActionCoroutine != null)
         {
             StopCoroutine(waypointActionCoroutine);
             waypointActionCoroutine = null;
 
-            // Stop particles if they are playing
             if (actionParticles != null && actionParticles.isPlaying)
             {
                 actionParticles.Stop();
             }
-
-            // Reset animation parameters
             animator.SetBool("IsActing", false);
-
-            // Increment the waypoint index
             currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
         }
 
@@ -285,10 +284,12 @@ public abstract class EnemyBase : MonoBehaviour
 
         currentChaseDuration = chaseDuration;
         isChaseTimerActive = true;
+
+        FindAndChasePlayer();
     }
 
 
-    protected void DisableAggressiveMode()
+    protected virtual void DisableAggressiveMode()
     {
         isAggressiveMode = false;
         isChaseTimerActive = false;
@@ -305,16 +306,19 @@ public abstract class EnemyBase : MonoBehaviour
     protected void FindAndChasePlayer()
     {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null && player.layer == LayerMask.NameToLayer("Player"))
+        if (player != null && player.layer != LayerMask.NameToLayer("Hidden"))
         {
             StartChasing(player.transform);
         }
         else
         {
-            // Player not found or is hidden, exit aggressive mode
             if (isAggressiveMode)
             {
                 DisableAggressiveMode();
+            }
+            if (isChasing)
+            {
+                StopChasing();
             }
         }
     }
@@ -350,17 +354,16 @@ public abstract class EnemyBase : MonoBehaviour
             if (hit.collider.CompareTag("Player"))
             {
                 GameObject playerObj = hit.collider.gameObject;
-                if (playerObj.layer == LayerMask.NameToLayer("Player"))
+                // ѕровер€ем только слой Hidden, в остальных случа€х видим игрока
+                if (playerObj.layer == LayerMask.NameToLayer("Hidden"))
                 {
-                    // »грок видим
-                    playerDetected = true;
-                    detectedPlayer = hit.collider.transform;
+                    playerDetected = false;
                     break;
                 }
-                else if (playerObj.layer == LayerMask.NameToLayer("Hidden"))
+                else
                 {
-                    // »грок спр€талс€, враг не видит его
-                    playerDetected = false;
+                    playerDetected = true;
+                    detectedPlayer = hit.collider.transform;
                     break;
                 }
             }
@@ -375,19 +378,30 @@ public abstract class EnemyBase : MonoBehaviour
                 if (hit.collider.CompareTag("Player"))
                 {
                     GameObject playerObj = hit.collider.gameObject;
-                    if (playerObj.layer == LayerMask.NameToLayer("Player"))
+                    if (playerObj.layer == LayerMask.NameToLayer("Hidden"))
+                    {
+                        playerDetected = false;
+                        break;
+                    }
+                    else
                     {
                         playerDetected = true;
                         detectedPlayer = hit.collider.transform;
                         break;
                     }
-                    else if (playerObj.layer == LayerMask.NameToLayer("Hidden"))
-                    {
-                        playerDetected = false;
-                        break;
-                    }
                 }
             }
+        }
+
+        // ѕровер€ем, не спр€талс€ ли уже обнаруженный игрок
+        if (playerTransform != null && playerTransform.gameObject.layer == LayerMask.NameToLayer("Hidden"))
+        {
+            if (isAggressiveMode)
+            {
+                DisableAggressiveMode();
+            }
+            StopChasing();
+            return;
         }
 
         // ќбработка результатов обнаружени€
@@ -465,34 +479,40 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
-  
 
 
-    protected void HandleChasingLogic()
+
+    protected virtual void HandleChasingLogic()
     {
         if (playerTransform == null) return;
 
-        // ѕровер€ем, не спр€талс€ ли игрок
+        // ѕровер€ем, не спр€талс€ ли уже обнаруженный игрок
         if (playerTransform.gameObject.layer == LayerMask.NameToLayer("Hidden"))
         {
             if (isAggressiveMode)
             {
                 DisableAggressiveMode();
             }
-            else
-            {
-                StopChasing();
-            }
+            StopChasing();
             return;
         }
 
         float yDifference = Mathf.Abs(playerTransform.position.y - transform.position.y);
+        Debug.Log($"Y difference: {yDifference}, Threshold: {teleportSearchThresholdY}");
 
         if (yDifference > teleportSearchThresholdY)
         {
             if (!isMovingToTeleport)
             {
-                SearchForTeleport();
+                bool isPlayerAbove = playerTransform.position.y > transform.position.y;
+                SearchForTeleport(isPlayerAbove);
+                Vector2 horizontalDirection = new Vector2(
+                    Mathf.Sign(playerTransform.position.x - transform.position.x),
+                    0
+                );
+                float speed = isAggressiveMode ? aggressiveChaseSpeed : chaseSpeed;
+                rb.velocity = horizontalDirection * speed;
+                Debug.Log($"Horizontal chase velocity: {rb.velocity}, Moving towards player X while searching for teleport");
             }
             else if (currentTargetTeleport != null)
             {
@@ -507,7 +527,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
     }
 
-    protected void SearchForTeleport()
+    protected void SearchForTeleport(bool searchingUp)
     {
         if (Time.time - lastTeleportTime < teleportCooldown) return;
 
@@ -521,27 +541,43 @@ public abstract class EnemyBase : MonoBehaviour
         {
             if (teleport.GetDestination() == null) continue;
 
-            // ѕровер€ем, приближает ли нас телепорт к игроку по Y
+            float teleportDestY = teleport.GetDestination().position.y;
             float currentYDiff = Mathf.Abs(transform.position.y - playerY);
-            float afterTeleportYDiff = Mathf.Abs(teleport.GetDestination().position.y - playerY);
+            float afterTeleportYDiff = Mathf.Abs(teleportDestY - playerY);
 
-            if (afterTeleportYDiff < currentYDiff)
+            // ѕровер€ем направление телепорта
+            bool isTeleportUp = teleportDestY > transform.position.y;
+
+            // “елепорт должен вести в том же направлении, куда нам нужно
+            if (isTeleportUp == searchingUp)
             {
-                float distanceToTeleport = Vector2.Distance(transform.position, teleport.transform.position);
-                float score = distanceToTeleport + afterTeleportYDiff;
-
-                if (score < bestScore)
+                // ѕровер€ем, что телепорт действительно приближает нас к игроку
+                if (afterTeleportYDiff < currentYDiff)
                 {
-                    bestScore = score;
-                    bestTeleport = teleport;
+                    float distanceToTeleport = Vector2.Distance(transform.position, teleport.transform.position);
+                    float score = distanceToTeleport + afterTeleportYDiff;
+
+                    if (score < bestScore)
+                    {
+                        bestScore = score;
+                        bestTeleport = teleport;
+                        Debug.Log($"Found better teleport: {teleport.name}, Score: {score}, Direction: {(searchingUp ? "Up" : "Down")}");
+                    }
                 }
             }
         }
 
-        if (bestTeleport != null)
+        if (bestTeleport != null && Vector2.Distance(transform.position, bestTeleport.transform.position) > 0.5f)
         {
             currentTargetTeleport = bestTeleport;
             isMovingToTeleport = true;
+            Debug.Log($"Selected teleport: {bestTeleport.name}, Moving towards it");
+        }
+        else
+        {
+            isMovingToTeleport = false;
+            currentTargetTeleport = null;
+            Debug.Log("No suitable teleport found");
         }
     }
 
@@ -566,17 +602,23 @@ public abstract class EnemyBase : MonoBehaviour
     {
         if (playerTransform != null)
         {
-            Vector2 directionToPlayer = playerTransform.position - transform.position;
-            // ќграничиваем движение по Y, если не используем телепорт
+            Vector2 directionToPlayer = (playerTransform.position - transform.position);
+
+            // ≈сли не используем телепорт и разница по Y слишком больша€
             if (!isMovingToTeleport && Mathf.Abs(directionToPlayer.y) > teleportSearchThresholdY)
             {
                 directionToPlayer.y = 0;
             }
 
-            rb.velocity = directionToPlayer.normalized * (isAggressiveMode ? aggressiveChaseSpeed : chaseSpeed);
+            float currentSpeed = isAggressiveMode ? aggressiveChaseSpeed : chaseSpeed;
+
+            // ѕримен€ем скорость напр€мую
+            rb.velocity = directionToPlayer.normalized * currentSpeed;
+
+            // ќтладочный вывод
+            Debug.Log($"Chase velocity: {rb.velocity}, Speed: {currentSpeed}, IsAggressive: {isAggressiveMode}");
         }
     }
-
     protected void MoveToPosition(Vector3 targetPosition)
     {
         Vector2 direction = (targetPosition - transform.position).normalized;

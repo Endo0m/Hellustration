@@ -10,7 +10,47 @@ public class ButcherEnemy : EnemyBase
     private HashSet<string> collectedItems = new HashSet<string>();
     private bool isPlayerCaptured = false;
     private bool hasAllItems = false; // Флаг, показывающий, что все предметы собраны
+    protected override void Update()
+    {
+        // Если игрок не захвачен и у мясника нет всех предметов
+        if (!isPlayerCaptured && !hasAllItems)
+        {
+            base.Update(); // Выполняем обычную логику врага, включая агрессивный режим
+            DetectAndCapturePlayer();
+        }
+        // Если есть все предметы, идем к последней точке
+        else if (hasAllItems && currentWaypointIndex == waypoints.Length - 1)
+        {
+            float distanceToLastWaypoint = Vector2.Distance(transform.position, waypoints[waypoints.Length - 1].point.position);
+            if (distanceToLastWaypoint < 0.1f)
+            {
+                CheckIfDefeated();
+            }
+        }
+    }
+    protected override void EnableAggressiveMode()
+    {
+        if (!isPlayerCaptured && !hasAllItems)
+        {
+            base.EnableAggressiveMode();
+        }
+    }
 
+    protected override void DisableAggressiveMode()
+    {
+        if (!isPlayerCaptured && !hasAllItems)
+        {
+            base.DisableAggressiveMode();
+        }
+    }
+    protected override void HandleChasingLogic()
+    {
+        // Если игрок захвачен или есть все предметы - не преследуем
+        if (isPlayerCaptured || hasAllItems)
+            return;
+
+        base.HandleChasingLogic();
+    }
     private void OnTriggerEnter2D(Collider2D other)
     {
         ItemIdentifier item = other.GetComponent<ItemIdentifier>();
@@ -31,24 +71,7 @@ public class ButcherEnemy : EnemyBase
         }
     }
 
-    protected override void Update()
-    {
-        if (!isPlayerCaptured)
-        {
-            base.Update(); // Выполняем обычную логику врага
-            DetectAndCapturePlayer();
-        }
 
-        // Проверка, достиг ли враг последней точки маршрута
-        if (hasAllItems && currentWaypointIndex == waypoints.Length - 1)
-        {
-            float distanceToLastWaypoint = Vector2.Distance(transform.position, waypoints[waypoints.Length - 1].point.position);
-            if (distanceToLastWaypoint < 0.1f) // Проверка на близость к последней точке
-            {
-                CheckIfDefeated();
-            }
-        }
-    }
 
 
     protected override void CheckIfDefeated()
@@ -95,12 +118,13 @@ public class ButcherEnemy : EnemyBase
 
     private void StopEnemyActions()
     {
-        // Останавливаем анимации врага
         animator.SetBool("IsWalking", false);
         animator.SetBool("IsChasing", false);
-
-        // Останавливаем движение
         rb.velocity = Vector2.zero;
+
+        // Отключаем агрессивный режим при захвате игрока
+        isAggressiveMode = false;
+        isChaseTimerActive = false;
     }
 
     private void OnDrawGizmosSelected()
