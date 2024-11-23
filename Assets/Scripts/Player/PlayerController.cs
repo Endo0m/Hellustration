@@ -53,7 +53,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isHidden)
         {
-            if (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(0))
+            if (Input.GetKeyDown(KeyCode.E))
             {
                 Reveal();
             }
@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             Interact();
         }

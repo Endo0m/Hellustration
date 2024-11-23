@@ -20,7 +20,7 @@ TagManager:
   - Hidden
   - InteractObjects
   - Particles
-  - 
+  - NoShadow
   - 
   - 
   - 
@@ -43,4 +43,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: NoShadow
+    uniqueID: 1660682101
     locked: 0
