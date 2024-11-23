@@ -1,29 +1,27 @@
-using UnityEngine;
+п»їusing UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
 public class TeleportZone : MonoBehaviour
 {
-    [SerializeField] private Transform destinationPoint; // Позиция для перемещения объекта при переходе
+    [SerializeField] private Transform destinationPoint;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Enemy"))
         {
-            // Передаем объект other.gameObject в метод Teleport
             Teleport(other.gameObject);
         }
     }
 
     public void Teleport(GameObject obj)
     {
-        // Перемещение объекта
         if (destinationPoint != null)
         {
             obj.transform.position = destinationPoint.position;
         }
         else
         {
-            Debug.LogWarning("Destination Point не задан для TeleportZone.");
+            Debug.LogWarning("Destination Point РЅРµ Р·Р°РґР°РЅ РґР»СЏ TeleportZone.");
         }
     }
 
@@ -39,6 +37,8 @@ public class TeleportZone : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawLine(transform.position, destinationPoint.position);
             Gizmos.DrawSphere(destinationPoint.position, 0.2f);
+
+           
         }
     }
 }
