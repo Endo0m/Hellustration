@@ -37,7 +37,7 @@ public class Enemy : MonoBehaviour
     [Header("Layer Settings")]
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private LayerMask hideLayer;
-
+    public int WaypointCount => waypoints.Length;
     // Состояние
     private bool isPlayerCaptured = false;
     private bool hasAllItems = false;
@@ -210,28 +210,28 @@ public class Enemy : MonoBehaviour
 
     protected void CheckPlayerDetection()
     {
-        if (isHunterMode) return;
+        if (isHunterMode || isPlayerCaptured) return;
 
         Vector2 position = transform.position + new Vector3(0, raycastYOffset);
 
         // Проверяем радиус захвата
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(position, captureRadius);
-        foreach (Collider2D collider in colliders)
+        Collider2D playerCollider = Physics2D.OverlapCircle(position, captureRadius, playerLayer);
+        if (playerCollider != null && playerCollider.CompareTag("Player"))
         {
-            if (collider.CompareTag("Player") &&
-                collider.gameObject.layer != LayerMask.NameToLayer("Hidden"))
+            // Проверяем, что игрок не спрятан
+            if (playerCollider.gameObject.layer == LayerMask.NameToLayer("Player"))
             {
                 CapturePlayer();
                 return;
             }
         }
 
-        // Проверяем обнаружение лучами
+        // Проверяем обнаружение лучами только если игрок не на слое Hidden
         Transform detectedPlayer = playerDetector.GetDetectedPlayer(position, facingDirection,
             isChasing ? frontRayLength * 2 : frontRayLength,
             isChasing ? backRayLength * 2 : backRayLength);
 
-        if (detectedPlayer != null)
+        if (detectedPlayer != null && detectedPlayer.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             float yDifference = Mathf.Abs(detectedPlayer.position.y - transform.position.y);
             if (yDifference > hunterSettings.teleportSearchThresholdY)
@@ -258,7 +258,6 @@ public class Enemy : MonoBehaviour
             StopChasing();
         }
     }
-
     private void SearchForTeleport(bool searchingUp)
     {
         if (Time.time - lastTeleportTime < 2f) return;
@@ -626,8 +625,19 @@ public class Enemy : MonoBehaviour
         Gizmos.color = Color.blue;
         Gizmos.DrawRay(position, -facingDirection * currentBackLength);
 
+        // Рисуем радиус захвата с разными цветами в зависимости от режима
+        if (isPlayerCaptured)
+            Gizmos.color = new Color(1f, 0f, 0f, 0.5f); // Красный
+        else if (isChasing)
+            Gizmos.color = new Color(1f, 0.5f, 0f, 0.5f); // Оранжевый
+        else
+            Gizmos.color = new Color(1f, 1f, 0f, 0.5f); // Жёлтый
+
         // Рисуем радиус захвата
-        Gizmos.color = new Color(1f, 0f, 0f, 0.3f); // Полупрозрачный красный
         Gizmos.DrawWireSphere(position, captureRadius);
+
+        // Дополнительно рисуем заполненную сферу с меньшей прозрачностью
+        Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.1f);
+        Gizmos.DrawSphere(position, captureRadius);
     }
 }
