@@ -14,7 +14,7 @@ public class PieSpawner : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            EnemyBase enemyBase = other.GetComponent<EnemyBase>();
+            Enemy enemyBase = other.GetComponent<Enemy>();
 
             // ѕровер€ем, прошел ли враг нужную точку и не был ли предмет ранее заспавнен
             if (enemyBase != null && enemyBase.CurrentWaypoint >= requiredWaypointForSpawn && !hasSpawned)

@@ -19,7 +19,7 @@ public class ItemLifespan : MonoBehaviour
     {
         if (!isDestroyed && other.CompareTag("Enemy"))
         {
-            EnemyBase enemyBase = other.GetComponent<EnemyBase>();
+            Enemy enemyBase = other.GetComponent<Enemy>();
             if (enemyBase != null)
             {
                 Debug.Log($"Enemy reached waypoint {enemyBase.CurrentWaypoint}. Required waypoint: {requiredWaypoint}");
