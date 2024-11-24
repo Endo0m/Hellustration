@@ -9,7 +9,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float interactionRadius = 1f;
 
     [Header("Components")]
-    [SerializeField] private PulseController pulseController;
     [SerializeField] private GameObject playerLight;
     [SerializeField] private GameObject deathCanvas;
 
@@ -109,26 +108,6 @@ public class PlayerController : MonoBehaviour
         {
             string soundKey = isRunning ? runSoundKey : walkSoundKey;
             soundManager.PlaySound(soundKey, audioSource);
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        if (!isHidden)
-        {
-            if (Time.time - lastTime >= 1f)
-            {
-                lastTime = Time.time;
-
-                if (rb.velocity.magnitude > 3f)
-                {
-                    pulseController.UpPulseCounter();
-                }
-                else
-                {
-                    pulseController.RestorePulse();
-                }
-            }
         }
     }
 
