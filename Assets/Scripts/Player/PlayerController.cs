@@ -44,7 +44,8 @@ public class PlayerController : MonoBehaviour
 
         // Настройка пространственного звука
         audioSource.spatialBlend = 1f;
-        audioSource.maxDistance = 25f;
+        audioSource.volume = .2f;
+        audioSource.maxDistance = 5f;
         audioSource.rolloffMode = AudioRolloffMode.Linear;
     }
 

@@ -31,6 +31,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private string walkSoundKey = "enemy_walk";
     [SerializeField] private string runSoundKey = "enemy_run";
     [SerializeField] private string detectionSoundKey = "enemy_detect";
+    [SerializeField] private string[] breathSoundKey;
+    [SerializeField] private string[] stomachSoundKey;
     [SerializeField] private float stepSoundInterval = 0.5f;
     [SerializeField] private float detectionSoundCooldown = 3f;
 
@@ -72,6 +74,19 @@ public class Enemy : MonoBehaviour
     {
         musicController = FindObjectOfType<MusicController>();
     }
+
+    public void RoarSound()
+    {
+        var index = Random.Range(0, breathSoundKey.Length -1);
+        var clip = breathSoundKey[index];
+        audioController.PlaySound(clip);
+    }   
+    public void StomatchSound()
+    {
+        var index = Random.Range(0, stomachSoundKey.Length -1);
+        var clip = stomachSoundKey[index];
+        audioController.PlaySound(clip);
+    } 
     private void InitializeComponents()
     {
         movementController = gameObject.AddComponent<MovementController>();

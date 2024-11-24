@@ -15,10 +15,15 @@ public class WobbleObject : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
     }
+
+    public void SoundIvent()
+    {
+
+        SoundManager.Instance.PlaySound(openSoundKey, audioSource);
+    }
     public void Interact(GameObject interactor)
     {
         if (hasDroppedItem) return; // Предотвращаем повторное взаимодействие
-        SoundManager.Instance.PlaySound(openSoundKey, audioSource);
 
         // Запуск анимации покачивания
         if (animator != null)

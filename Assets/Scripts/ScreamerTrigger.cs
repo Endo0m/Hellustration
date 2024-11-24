@@ -7,12 +7,19 @@ public class ScreamerTrigger : MonoBehaviour
     [SerializeField] private Transform spawnPoint; // Точка создания скримера
     [SerializeField] private float screamerLifetime = 3.0f; // Время жизни скримера в секундах
     private bool hasTriggered = false; // Флаг для отслеживания срабатывания
+    private AudioSource audioSource;
+    [SerializeField] private string screamSound;
 
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
     private void OnTriggerEnter2D(Collider2D other)
     {
         // Проверяем, если объект, вошедший в триггер, является игроком и скрипт еще не срабатывал
         if (other.CompareTag("Player") && !hasTriggered)
         {
+            SoundManager.Instance.PlaySound(screamSound, audioSource);
             hasTriggered = true; // Устанавливаем флаг, чтобы скрипт больше не срабатывал
             StartCoroutine(SpawnScreamer());
         }
