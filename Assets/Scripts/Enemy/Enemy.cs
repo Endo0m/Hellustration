@@ -37,6 +37,7 @@ public class Enemy : MonoBehaviour
     [Header("Layer Settings")]
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private LayerMask hideLayer;
+    private MusicController musicController;
     public int WaypointCount => waypoints.Length;
     // Состояние
     private bool isPlayerCaptured = false;
@@ -62,10 +63,15 @@ public class Enemy : MonoBehaviour
 
     private void Awake()
     {
+
         InitializeComponents();
         InitializeHunterMode();
     }
 
+    private void Start()
+    {
+        musicController = FindObjectOfType<MusicController>();
+    }
     private void InitializeComponents()
     {
         movementController = gameObject.AddComponent<MovementController>();
@@ -188,7 +194,10 @@ public class Enemy : MonoBehaviour
             {
                 actionParticles.Stop();
             }
-
+            if (musicController != null)
+            {
+                musicController.StartHuntMode();
+            }
             animationController.PlayAnimation("IsWalking", false);
             animationController.PlayAnimation("IsActing", false);
             animationController.PlayAnimation("IsChasing", true);
@@ -203,7 +212,10 @@ public class Enemy : MonoBehaviour
 
         animationController.PlayAnimation("IsChasing", false);
         movementController.Stop();
-
+        if (musicController != null)
+        {
+            musicController.StopHuntMode();
+        }
         currentWaypointIndex = lastKnownWaypointIndex;
         isMoving = true;
     }
