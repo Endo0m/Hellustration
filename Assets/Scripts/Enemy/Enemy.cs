@@ -110,6 +110,7 @@ public class Enemy : MonoBehaviour
     {
         if (!isPlayerCaptured && !readyToComplete)
         {
+            CheckCaptureRadius(); // Добавляем проверку захвата в основной цикл
             UpdateHunterMode();
             if (!isHunterMode)
             {
@@ -241,18 +242,6 @@ public class Enemy : MonoBehaviour
 
         Vector2 position = transform.position + new Vector3(0, raycastYOffset);
 
-        // Проверяем радиус захвата
-        Collider2D playerCollider = Physics2D.OverlapCircle(position, captureRadius, playerLayer);
-        if (playerCollider != null && playerCollider.CompareTag("Player"))
-        {
-            // Проверяем, что игрок не спрятан
-            if (playerCollider.gameObject.layer == LayerMask.NameToLayer("Player"))
-            {
-                CapturePlayer();
-                return;
-            }
-        }
-
         // Проверяем обнаружение лучами только если игрок не на слое Hidden
         Transform detectedPlayer = playerDetector.GetDetectedPlayer(position, facingDirection,
             isChasing ? frontRayLength * 2 : frontRayLength,
@@ -283,6 +272,22 @@ public class Enemy : MonoBehaviour
         else if (isChasing)
         {
             StopChasing();
+        }
+    }
+    private void CheckCaptureRadius()
+    {
+        if (isPlayerCaptured) return;
+
+        Vector2 position = transform.position + new Vector3(0, raycastYOffset);
+        Collider2D playerCollider = Physics2D.OverlapCircle(position, captureRadius, playerLayer);
+
+        if (playerCollider != null && playerCollider.CompareTag("Player"))
+        {
+            // Проверяем, что игрок не спрятан
+            if (playerCollider.gameObject.layer == LayerMask.NameToLayer("Player"))
+            {
+                CapturePlayer();
+            }
         }
     }
     private void SearchForTeleport(bool searchingUp)

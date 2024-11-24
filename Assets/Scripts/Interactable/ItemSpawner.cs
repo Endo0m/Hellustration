@@ -10,11 +10,10 @@ public class ItemSpawner : MonoBehaviour
 
     private GameObject modifiedItemPrefab;
     private bool useModifiedItem = false;
-    private int lastCycleSpawn = -1;
     private bool isSpawning = false;
-
-    // Сохраняем состояние модификации между циклами
-    private bool wasModifiedLastCycle = false;
+    private int currentCycle = 0;
+    private int lastWaypointSeen = -1;
+    private bool spawnedInCurrentCycle = false;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -25,38 +24,35 @@ public class ItemSpawner : MonoBehaviour
             {
                 int currentWaypoint = enemy.CurrentWaypoint;
                 int waypointCount = enemy.WaypointCount;
-                int currentCycle = currentWaypoint / waypointCount;
                 int waypointInCycle = currentWaypoint % waypointCount;
 
-                Debug.Log($"Enemy entered spawner: Cycle {currentCycle}, Waypoint {waypointInCycle}, Required {requiredWaypointForSpawn}, UseModified: {useModifiedItem}");
+                // Определяем начало нового круга (когда точка меньше предыдущей или равна 0)
+                if (waypointInCycle == 0 && lastWaypointSeen > 0)
+                {
+                    currentCycle++;
+                    spawnedInCurrentCycle = false;
+                    Debug.Log($"New cycle started: {currentCycle}, resetting spawn flags");
+                }
 
-                if (waypointInCycle >= requiredWaypointForSpawn &&
-                    currentCycle != lastCycleSpawn &&
+                lastWaypointSeen = waypointInCycle;
+
+                Debug.Log($"Enemy entered spawner: Cycle {currentCycle}, Waypoint {waypointInCycle}, " +
+                    $"Required {requiredWaypointForSpawn}, Spawned in cycle: {spawnedInCurrentCycle}");
+
+                // Проверяем условия для спавна:
+                // 1. Достигли или прошли требуемую точку
+                // 2. Еще не спавнили в этом цикле
+                // 3. Не в процессе спавна
+                if (waypointInCycle == requiredWaypointForSpawn &&
+                    !spawnedInCurrentCycle &&
                     !isSpawning)
                 {
-                    lastCycleSpawn = currentCycle;
-
-                    // Если предмет не был модифицирован в предыдущем цикле,
-                    // начинаем с первого базового предмета
-                    if (!wasModifiedLastCycle)
-                    {
-                        useModifiedItem = false;
-                        modifiedItemPrefab = null;
-                    }
-
+                    Debug.Log($"Spawning items for cycle {currentCycle} at waypoint {waypointInCycle}");
+                    spawnedInCurrentCycle = true;
                     StartCoroutine(SpawnItemsSequentially());
                 }
             }
         }
-    }
-
-    public void SetModifiedItem(GameObject newPrefab)
-    {
-        modifiedItemPrefab = newPrefab;
-        useModifiedItem = true;
-        wasModifiedLastCycle = true;
-
-        Debug.Log($"Item modifier updated. UseModified: {useModifiedItem}, Modified prefab: {newPrefab.name}");
     }
 
     private IEnumerator SpawnItemsSequentially()
@@ -66,50 +62,62 @@ public class ItemSpawner : MonoBehaviour
         // Спавним первый предмет
         if (itemPrefabs.Length > 0)
         {
-            GameObject firstItem = wasModifiedLastCycle && modifiedItemPrefab != null ?
+            GameObject itemToSpawn = useModifiedItem && modifiedItemPrefab != null ?
                 modifiedItemPrefab : itemPrefabs[0];
 
-            GameObject item = Instantiate(firstItem, spawnPoint.position, spawnPoint.rotation);
+            GameObject item = Instantiate(itemToSpawn, spawnPoint.position, spawnPoint.rotation);
             ItemLifespan lifespan = item.GetComponent<ItemLifespan>();
             if (lifespan != null)
             {
                 lifespan.Initialize(requiredWaypointForSpawn);
-                Debug.Log($"Spawned first item with requiredWaypointForSpawn: {requiredWaypointForSpawn}");
+                Debug.Log($"Spawned first item in cycle {currentCycle}");
             }
         }
 
         yield return new WaitForSeconds(timeUntilNextItem);
 
         // Спавним второй предмет
-        GameObject itemToSpawn = useModifiedItem && modifiedItemPrefab != null ?
-            modifiedItemPrefab :
-            (itemPrefabs.Length > 1 ? itemPrefabs[1] : null);
-
-        if (itemToSpawn != null)
+        if (itemPrefabs.Length > 1)
         {
-            GameObject item = Instantiate(itemToSpawn, spawnPoint.position, spawnPoint.rotation);
-            ItemLifespan lifespan = item.GetComponent<ItemLifespan>();
-            if (lifespan != null)
+            GameObject itemToSpawn = useModifiedItem && modifiedItemPrefab != null ?
+                modifiedItemPrefab : itemPrefabs[1];
+
+            if (itemToSpawn != null)
             {
-                lifespan.Initialize(requiredWaypointForSpawn);
-                Debug.Log($"Spawned second item with requiredWaypointForSpawn: {requiredWaypointForSpawn}");
+                GameObject item = Instantiate(itemToSpawn, spawnPoint.position, spawnPoint.rotation);
+                ItemLifespan lifespan = item.GetComponent<ItemLifespan>();
+                if (lifespan != null)
+                {
+                    lifespan.Initialize(requiredWaypointForSpawn);
+                    Debug.Log($"Spawned second item in cycle {currentCycle}");
+                }
             }
         }
 
+        yield return new WaitForSeconds(0.1f);
         isSpawning = false;
+        Debug.Log($"Finished spawning for cycle {currentCycle}");
     }
 
-    // Метод для сброса состояния модификации (вызывать при необходимости)
-    public void ResetModification()
+    public void SetModifiedItem(GameObject newPrefab)
     {
+        modifiedItemPrefab = newPrefab;
+        useModifiedItem = true;
+        Debug.Log($"Modified item set to: {newPrefab.name}");
+    }
+
+    public void ResetSpawner()
+    {
+        currentCycle = 0;
+        lastWaypointSeen = -1;
+        spawnedInCurrentCycle = false;
+        isSpawning = false;
         useModifiedItem = false;
         modifiedItemPrefab = null;
-        wasModifiedLastCycle = false;
     }
 
     private void OnDisable()
     {
-        // Сбрасываем состояние при отключении компонента
-        ResetModification();
+        ResetSpawner();
     }
 }

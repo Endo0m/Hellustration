@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private string runSoundKey = "player_run";
     [SerializeField] private float walkStepInterval = 0.5f;
     [SerializeField] private float runStepInterval = 0.3f;
-
+    [SerializeField] private float audioVolume = 0.05f;
     private float scale = 1f;
     private Rigidbody2D rb;
     private Vector2 movement;
@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
 
         // Настройка пространственного звука
         audioSource.spatialBlend = 1f;
-        audioSource.volume = .2f;
+        audioSource.volume = audioVolume;
         audioSource.maxDistance = 5f;
         audioSource.rolloffMode = AudioRolloffMode.Linear;
     }
