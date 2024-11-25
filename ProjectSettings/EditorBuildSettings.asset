@@ -14,4 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: f250a3074acefa84bb8762db45a4610f
+  - enabled: 1
+    path: Assets/Scenes/SceneDiePlayer.unity
+    guid: 94cd5573032a5794fb5cba973c9c5ba3
+  - enabled: 1
+    path: Assets/Scenes/CutSceneDieButcher.unity
+    guid: feff8e7467ad0fa488c6c243bc16a39a
   m_configObjects: {}

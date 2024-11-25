@@ -694,8 +694,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   videoPlayer: {fileID: 941257011}
-  englishVideo: {fileID: 32900000, guid: 3c71d49a6a14278428ac8a966a110a6c, type: 3}
-  russianVideo: {fileID: 32900000, guid: 3c71d49a6a14278428ac8a966a110a6c, type: 3}
+  englishVideo: {fileID: 32900000, guid: 2fff9ebf727a6864c932870850a86e9b, type: 3}
+  russianVideo: {fileID: 32900000, guid: 2fff9ebf727a6864c932870850a86e9b, type: 3}
   nameScene: MainMenu
 --- !u!328 &941257011
 VideoPlayer:
@@ -705,7 +705,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 941257008}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 3c71d49a6a14278428ac8a966a110a6c, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: 2fff9ebf727a6864c932870850a86e9b, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -714,7 +714,7 @@ VideoPlayer:
   m_TargetMaterialRenderer: {fileID: 0}
   m_TargetMaterialProperty: <noninit>
   m_RenderMode: 2
-  m_AspectRatio: 0
+  m_AspectRatio: 2
   m_DataSource: 0
   m_TimeUpdateMode: 2
   m_PlaybackSpeed: 1
