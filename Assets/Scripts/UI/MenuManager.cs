@@ -8,7 +8,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Transform menu;
     [SerializeField] private Transform rules;
     [SerializeField] private Transform author;
-
+    [SerializeField] private Transform settings; // ƒобавл€ем новую панель
     private float menuWidth;
 
     private void Start()
@@ -16,37 +16,69 @@ public class MenuManager : MonoBehaviour
         menuWidth = menu.GetComponent<RectTransform>().rect.width;
     }
 
+    // ƒобавл€ем универсальные методы, которые делают в точности то же самое
+    private void EnablePanelWithMenuWidth(Transform panel, float width)
+    {
+        panel.localPosition = new Vector2(-Screen.width - width, 0);
+        panel.LeanMoveLocalX(-900, 0.5f).setEaseOutExpo().delay = 0.1f;
+    }
+
+    private void EnablePanelWithOwnWidth(Transform panel)
+    {
+        panel.localPosition = new Vector2(-Screen.width - panel.GetComponent<RectTransform>().rect.width, 0);
+        panel.LeanMoveLocalX(-900, 0.5f).setEaseOutExpo().delay = 0.1f;
+    }
+
+    private void ClosePanelWithMenuWidth(Transform panel, float width)
+    {
+        panel.LeanMoveLocalX(-Screen.width - width, 0.5f).setEaseOutExpo();
+    }
+
+    private void ClosePanelWithOwnWidth(Transform panel)
+    {
+        panel.LeanMoveLocalX(-Screen.width - panel.GetComponent<RectTransform>().rect.width, 0.5f).setEaseOutExpo();
+    }
+
+    // ќставл€ем оригинальные методы без изменений
     public void OnEnableMenu()
     {
-        menu.localPosition = new Vector2(-Screen.width - menuWidth, 0);
-        menu.LeanMoveLocalX(-900, 0.5f).setEaseOutExpo().delay = 0.1f;
+        EnablePanelWithMenuWidth(menu, menuWidth);
     }
 
     public void CloseMenu()
     {
-        menu.LeanMoveLocalX(-Screen.width - menuWidth, 0.5f).setEaseOutExpo();
+        ClosePanelWithMenuWidth(menu, menuWidth);
     }
 
     public void OnEnableRules()
     {
-        rules.localPosition = new Vector2(-Screen.width - rules.GetComponent<RectTransform>().rect.width, 0);
-        rules.LeanMoveLocalX(-900, 0.5f).setEaseOutExpo().delay = 0.1f;
+        EnablePanelWithOwnWidth(rules);
     }
 
     public void CloseRules()
     {
-        rules.LeanMoveLocalX(-Screen.width - rules.GetComponent<RectTransform>().rect.width, 0.5f).setEaseOutExpo();
+        ClosePanelWithOwnWidth(rules);
     }
 
     public void OnEnableAuthor()
     {
-        author.localPosition = new Vector2(-Screen.width - author.GetComponent<RectTransform>().rect.width, 0);
-        author.LeanMoveLocalX(-900, 0.5f).setEaseOutExpo().delay = 0.1f;
+        EnablePanelWithOwnWidth(author);
     }
 
     public void CloseAuthor()
     {
-        author.LeanMoveLocalX(-Screen.width - author.GetComponent<RectTransform>().rect.width, 0.5f).setEaseOutExpo();
+        ClosePanelWithOwnWidth(author);
+    }
+
+    // ƒобавл€ем новые методы, использу€ те же универсальные методы
+    public void OnEnableSettings()
+    {
+        EnablePanelWithOwnWidth(settings);
+    }
+
+    public void CloseSettings()
+    {
+        ClosePanelWithOwnWidth(settings);
     }
 
     public void StartGame()

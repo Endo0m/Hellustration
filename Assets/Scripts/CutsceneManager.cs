@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.SceneManagement;
-using System;
-
 public class CutsceneManager : MonoBehaviour
 {
     public VideoPlayer videoPlayer;
-    private bool isSkipped = false;
+    [SerializeField] private VideoClip englishVideo;
+    [SerializeField] private VideoClip russianVideo;
     [SerializeField] string nameScene;
+    private bool isSkipped = false;
 
     void Start()
     {
@@ -16,7 +16,23 @@ public class CutsceneManager : MonoBehaviour
             videoPlayer = GetComponent<VideoPlayer>();
         }
 
+        // Set appropriate video based on current language
+        videoPlayer.clip = LocalizationManager.Instance.CurrentLanguage == "ru_RU" ? russianVideo : englishVideo;
+
         videoPlayer.loopPointReached += OnVideoEnd;
+        videoPlayer.Play();
+
+        // Subscribe to language changes
+        if (LocalizationManager.Instance != null)
+        {
+            LocalizationManager.Instance.OnLanguageChanged += OnLanguageChanged;
+        }
+    }
+
+    private void OnLanguageChanged()
+    {
+        // Update video when language changes
+        videoPlayer.clip = LocalizationManager.Instance.CurrentLanguage == "ru_RU" ? russianVideo : englishVideo;
         videoPlayer.Play();
     }
 
@@ -45,8 +61,14 @@ public class CutsceneManager : MonoBehaviour
 
     void LoadGameScene()
     {
-        var index = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(nameScene);
+    }
 
+    private void OnDestroy()
+    {
+        if (LocalizationManager.Instance != null)
+        {
+            LocalizationManager.Instance.OnLanguageChanged -= OnLanguageChanged;
+        }
     }
 }

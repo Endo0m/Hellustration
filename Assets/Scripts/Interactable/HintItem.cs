@@ -3,18 +3,31 @@ using DG.Tweening;
 
 public class HintItem : MonoBehaviour, ICollectible
 {
-    [SerializeField] private string hintText;
+    [Header("Localization Keys")]
+    [SerializeField] private string hintTextKey;
+
+    [Header("Sound Keys")]
+    [SerializeField] private string collectSoundKey = "hint_collect"; 
+    [SerializeField] private string shadowSoundKey = "shadow_hint";
+    [SerializeField] private string shadowSoundKeyRussian = "shadow_hint_ru";
+
+    [Header("Settings")]
     [SerializeField] private GameObject hintUIPrefab;
-    [SerializeField] private string collectSoundKey = "hint_collect";
-    [SerializeField] private string shadowSoundKey = "shadow_hint"; // Ключ для звука тени
     [SerializeField] private float fadeDuration = 1f;
 
     private bool isCollected = false;
     private bool wasReadFirstTime = false;
 
-    public string HintText => hintText;
+    // Get the localized hint text based on current language
+    public string HintText => LocalizationManager.Instance.GetLocalizedValue(hintTextKey);
+
+    // Universal collect sound
     public string CollectSoundKey => collectSoundKey;
-    public string ShadowSoundKey => shadowSoundKey;
+
+    // Get the appropriate shadow sound key based on current language
+    public string CurrentShadowSoundKey =>
+        LocalizationManager.Instance.CurrentLanguage == "ru_RU" ? shadowSoundKeyRussian : shadowSoundKey;
+
     public bool WasReadFirstTime => wasReadFirstTime;
 
     public void SetReadFirstTime()
@@ -25,7 +38,6 @@ public class HintItem : MonoBehaviour, ICollectible
     public void Collect(CollectController player)
     {
         if (isCollected) return;
-
         isCollected = true;
         player.AddHintToInventory(this);
         FadeOutAndDisable();
@@ -40,22 +52,40 @@ public class HintItem : MonoBehaviour, ICollectible
         }
         else
         {
-            UnityEngine.UI.Image image = GetComponent<UnityEngine.UI.Image>();
+            var image = GetComponent<UnityEngine.UI.Image>();
             if (image != null)
             {
                 image.DOFade(0, fadeDuration).OnComplete(() => gameObject.SetActive(false));
             }
             else
             {
-                Debug.LogWarning($"Не найден компонент для анимации исчезновения на объекте {gameObject.name}");
                 gameObject.SetActive(false);
             }
         }
     }
 
-    // Для возможности сброса состояния (например, при перезагрузке уровня)
     public void Reset()
     {
         isCollected = false;
+        gameObject.SetActive(true);
+
+        // Reset visibility
+        SpriteRenderer renderer = GetComponent<SpriteRenderer>();
+        if (renderer != null)
+        {
+            Color color = renderer.color;
+            color.a = 1f;
+            renderer.color = color;
+        }
+        else
+        {
+            var image = GetComponent<UnityEngine.UI.Image>();
+            if (image != null)
+            {
+                Color color = image.color;
+                color.a = 1f;
+                image.color = color;
+            }
+        }
     }
 }

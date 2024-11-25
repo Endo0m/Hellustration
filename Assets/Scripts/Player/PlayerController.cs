@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Components")]
     [SerializeField] private GameObject playerLight;
-    [SerializeField] private GameObject deathCanvas;
+    
 
     [Header("Sound Settings")]
     [SerializeField] private string walkSoundKey = "player_walk";
@@ -191,11 +192,10 @@ public class PlayerController : MonoBehaviour
             spriteRenderer.enabled = false;
         }
 
-        // Activate the death canvas
-        if (deathCanvas != null)
-        {
-            deathCanvas.SetActive(true);
-        }
+        // Load death scene instead of showing death canvas
+        SceneManager.LoadScene("SceneDiePlayer");
+
+      
     }
 
     public void TriggerDeathAnimation(System.Action onDeathComplete)

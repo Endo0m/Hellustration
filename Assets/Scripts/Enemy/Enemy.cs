@@ -397,7 +397,7 @@ public class Enemy : MonoBehaviour
         }
 
         Debug.Log("Enemy has collected all items and reached the final waypoint!");
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("CutSceneDieButcher"); 
     }
 
     private void UpdateMovement()

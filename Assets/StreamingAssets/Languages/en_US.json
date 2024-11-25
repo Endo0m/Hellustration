@@ -1,0 +1,80 @@
+{
+  "items": [
+    {
+      "key": "menu",
+      "value": "Menu"
+    },
+    {
+      "key": "newGame",
+      "value": "New Game"
+    },
+    {
+      "key": "authors",
+      "value": "Authors"
+    },
+    {
+      "key": "controls",
+      "value": "Controls"
+    },
+    {
+      "key": "exit",
+      "value": "Exit"
+    },
+    {
+      "key": "continue",
+      "value": "Continue"
+    },
+    {
+      "key": "settings",
+      "value": "Settings"
+    },
+    {
+      "key": "language",
+      "value": "Language"
+    },
+    {
+      "key": "movement",
+      "value": "Movement"
+    },
+    {
+      "key": "left",
+      "value": "Left"
+    },
+    {
+      "key": "right",
+      "value": "Right"
+    },
+    {
+      "key": "menu",
+      "value": "Menu"
+    },
+    {
+      "key": "hide",
+      "value": "Hide/Door"
+    },
+    {
+      "key": "pause",
+      "value": "Pause"
+    },
+    {
+      "key": "interact",
+      "value": "Interact"
+    },
+    {
+      "key": "run",
+      "value": "Run"
+    },
+    {
+      "key": "hint_dead",
+      "value": "Bless the dead who died at its hand"
+    },
+    {
+      "key": "hint_past",
+      "value": "Link its past with the present and then you'll help it see what it really is"
+    },
+    {
+      "key": "hint_chef",
+      "value": "The chef's heart is in its tool, and that is also a missing element of the recipe"
+    }
+  ]
+}

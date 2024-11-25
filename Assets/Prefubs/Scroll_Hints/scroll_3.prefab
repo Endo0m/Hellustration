@@ -101,11 +101,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98449bb87e3825c4f825972da92ca77b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hintText: "The chef\u2019s heart is in its tool, and that is also a missing element
-    of the recipe."
-  hintUIPrefab: {fileID: 2953904362354380284, guid: dcf75de1bd88d1047ad9d35da356f50a, type: 3}
+  hintTextKey: hint_chef
   collectSoundKey: hint_collect
   shadowSoundKey: shadow_hint
+  shadowSoundKeyRussian: shadow_hint_ru
+  hintUIPrefab: {fileID: 2953904362354380284, guid: dcf75de1bd88d1047ad9d35da356f50a, type: 3}
   fadeDuration: 1
 --- !u!61 &5359158722686544896
 BoxCollider2D:

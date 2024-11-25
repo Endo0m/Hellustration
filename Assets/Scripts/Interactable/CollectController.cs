@@ -16,30 +16,29 @@ public class CollectController : MonoBehaviour
     [SerializeField] private GameObject hintSlotPrefab;
     [SerializeField] private GameObject hintPanel;
     [SerializeField] private TextMeshProUGUI hintTextComponent;
+
     [Header("Hint Panel Settings")]
-    [SerializeField] private Button closeHintButton; // Кнопка закрытия подсказки
+    [SerializeField] private Button closeHintButton;
     [SerializeField] private float hintPanelAnimationDuration = 0.3f;
 
     [Header("Shadow Settings")]
     [SerializeField] private ShadowFollower shadow;
 
-    private bool isReadingHint = false;
     [Header("Sound Settings")]
-    [SerializeField] private string hintOpenSoundKey = "hint_open"; // Звук открытия подсказки
+    [SerializeField] private string hintOpenSoundKey = "hint_open";
     private AudioSource audioSource;
     private SoundManager soundManager;
 
     private Dictionary<string, DraggableUIItem> inventoryItems = new Dictionary<string, DraggableUIItem>();
     private List<HintItem> hintInventory = new List<HintItem>();
     private int collectedItemCount = 0;
+    private bool isReadingHint = false;
 
     private void Start()
     {
-        // Инициализация звуковой системы
         audioSource = gameObject.AddComponent<AudioSource>();
         soundManager = FindObjectOfType<SoundManager>();
 
-        // Инициализация существующих слотов
         foreach (Transform child in inventoryUIParent)
         {
             DraggableUIItem draggableItem = child.GetComponent<DraggableUIItem>();
@@ -48,6 +47,7 @@ public class CollectController : MonoBehaviour
                 inventoryItems[draggableItem.ItemName] = draggableItem;
             }
         }
+
         if (closeHintButton != null)
         {
             closeHintButton.onClick.AddListener(CloseHint);
@@ -56,7 +56,6 @@ public class CollectController : MonoBehaviour
 
     private void Update()
     {
-        // Опционально: добавляем возможность закрытия по клавише Escape
         if (isReadingHint && Input.GetKeyDown(KeyCode.Escape))
         {
             CloseHint();
@@ -65,7 +64,6 @@ public class CollectController : MonoBehaviour
 
     public void AddItemToInventory(CollectibleItem item)
     {
-        // Воспроизводим звук подбора предмета
         PlaySound(item.CollectSoundKey);
 
         string itemName = item.ItemName;
@@ -89,9 +87,7 @@ public class CollectController : MonoBehaviour
 
     public void AddHintToInventory(HintItem hintItem)
     {
-        // Воспроизводим звук подбора подсказки
         PlaySound(hintItem.CollectSoundKey);
-
         hintInventory.Add(hintItem);
         DisplayHintInUI(hintItem);
     }
@@ -106,18 +102,17 @@ public class CollectController : MonoBehaviour
         hintPanel.SetActive(true);
         hintTextComponent.text = hintText;
 
-        // Анимация появления панели
         hintPanel.transform.localScale = Vector3.zero;
         hintPanel.transform.DOScale(Vector3.one, hintPanelAnimationDuration)
             .SetEase(Ease.OutBack)
-            .SetUpdate(true); // Важно: анимация будет работать при остановленном времени
+            .SetUpdate(true);
 
-        // Проверяем, первое ли это прочтение подсказки
         if (!hintItem.WasReadFirstTime)
         {
             if (shadow != null)
             {
-                shadow.AppearAndSpeak(hintItem.ShadowSoundKey);
+                // Используем CurrentShadowSoundKey вместо ShadowSoundKey
+                shadow.AppearAndSpeak(hintItem.CurrentShadowSoundKey);
             }
             hintItem.SetReadFirstTime();
         }
@@ -127,10 +122,9 @@ public class CollectController : MonoBehaviour
     {
         if (!isReadingHint) return;
 
-        // Анимация исчезновения панели
         hintPanel.transform.DOScale(Vector3.zero, hintPanelAnimationDuration)
             .SetEase(Ease.InBack)
-            .SetUpdate(true) // Анимация работает при остановленном времени
+            .SetUpdate(true)
             .OnComplete(() =>
             {
                 hintPanel.SetActive(false);
@@ -151,7 +145,6 @@ public class CollectController : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Обеспечиваем восстановление времени при уничтожении объекта
         Time.timeScale = 1f;
     }
 
@@ -165,6 +158,7 @@ public class CollectController : MonoBehaviour
         }
         button.onClick.AddListener(() => ShowHint(hintItem.HintText, hintItem));
     }
+
     private void EnableItemDragging()
     {
         foreach (var item in inventoryItems.Values)
