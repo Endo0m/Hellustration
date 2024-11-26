@@ -41,7 +41,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private LayerMask hideLayer;
     private MusicController musicController;
     public int WaypointCount => waypoints.Length;
-    // Состояние
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     private bool isPlayerCaptured = false;
     private bool hasAllItems = false;
     private bool readyToComplete = false;
@@ -55,7 +55,7 @@ public class Enemy : MonoBehaviour
     private Vector2 facingDirection = Vector2.right;
     private Coroutine waypointActionCoroutine;
 
-    // Режим охоты
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     private float hunterModeTimer;
     private float currentHunterModeDuration;
     private bool isHunterMode = false;
@@ -110,7 +110,7 @@ public class Enemy : MonoBehaviour
     {
         if (!isPlayerCaptured && !readyToComplete)
         {
-            CheckCaptureRadius(); // Добавляем проверку захвата в основной цикл
+            CheckCaptureRadius(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             UpdateHunterMode();
             if (!isHunterMode)
             {
@@ -144,7 +144,7 @@ public class Enemy : MonoBehaviour
                 }
                 else
                 {
-                    InitializeHunterMode(); // Сбрасываем таймер если игрок спрятан
+                    InitializeHunterMode(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 }
             }
         }
@@ -242,7 +242,7 @@ public class Enemy : MonoBehaviour
 
         Vector2 position = transform.position + new Vector3(0, raycastYOffset);
 
-        // Проверяем обнаружение лучами только если игрок не на слое Hidden
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ Hidden
         Transform detectedPlayer = playerDetector.GetDetectedPlayer(position, facingDirection,
             isChasing ? frontRayLength * 2 : frontRayLength,
             isChasing ? backRayLength * 2 : backRayLength);
@@ -283,7 +283,7 @@ public class Enemy : MonoBehaviour
 
         if (playerCollider != null && playerCollider.CompareTag("Player"))
         {
-            // Проверяем, что игрок не спрятан
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if (playerCollider.gameObject.layer == LayerMask.NameToLayer("Player"))
             {
                 CapturePlayer();
@@ -307,7 +307,7 @@ public class Enemy : MonoBehaviour
             float currentYDiff = Mathf.Abs(transform.position.y - targetY);
             float afterTeleportYDiff = Mathf.Abs(teleport.GetDestination().position.y - targetY);
 
-            // Проверяем направление телепорта
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             bool isTeleportUp = teleport.GetDestination().position.y > transform.position.y;
             if (isTeleportUp == searchingUp && afterTeleportYDiff < currentYDiff)
             {
@@ -464,7 +464,7 @@ public class Enemy : MonoBehaviour
             if (!isMovingToTeleport)
             {
                 SearchForTeleportToWaypoint(targetPoint);
-                // Двигаемся горизонтально к точке маршрута пока ищем телепорт
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 Vector2 horizontalDirection = new Vector2(
                     Mathf.Sign(targetPoint.position.x - transform.position.x),
                     0
@@ -558,7 +558,7 @@ public class Enemy : MonoBehaviour
         animationController.PlayAnimation("IsWalking", false);
         animationController.PlayAnimation("IsActing", true);
 
-        // Воспроизводим уникальный звук точки, если он задан
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (!string.IsNullOrEmpty(currentData.waypointSoundKey))
         {
             audioController.PlayWaypointSound(currentData.waypointSoundKey, currentData.loopWaypointSound);
@@ -648,7 +648,7 @@ public class Enemy : MonoBehaviour
     {
         Vector2 position = transform.position + new Vector3(0, raycastYOffset);
 
-        // Рисуем лучи обнаружения
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         Gizmos.color = Color.red;
         float currentFrontLength = isChasing ? frontRayLength * 2 : frontRayLength;
         float currentBackLength = isChasing ? backRayLength * 2 : backRayLength;
@@ -657,18 +657,18 @@ public class Enemy : MonoBehaviour
         Gizmos.color = Color.blue;
         Gizmos.DrawRay(position, -facingDirection * currentBackLength);
 
-        // Рисуем радиус захвата с разными цветами в зависимости от режима
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         if (isPlayerCaptured)
-            Gizmos.color = new Color(1f, 0f, 0f, 0.5f); // Красный
+            Gizmos.color = new Color(1f, 0f, 0f, 0.5f); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         else if (isChasing)
-            Gizmos.color = new Color(1f, 0.5f, 0f, 0.5f); // Оранжевый
+            Gizmos.color = new Color(1f, 0.5f, 0f, 0.5f); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         else
-            Gizmos.color = new Color(1f, 1f, 0f, 0.5f); // Жёлтый
+            Gizmos.color = new Color(1f, 1f, 0f, 0.5f); // ЖёпїЅпїЅпїЅпїЅ
 
-        // Рисуем радиус захвата
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         Gizmos.DrawWireSphere(position, captureRadius);
 
-        // Дополнительно рисуем заполненную сферу с меньшей прозрачностью
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         Gizmos.color = new Color(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.1f);
         Gizmos.DrawSphere(position, captureRadius);
     }

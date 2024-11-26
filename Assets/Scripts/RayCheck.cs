@@ -52,41 +52,36 @@ public class RayCheck : MonoBehaviour
 
     private void PerformRayCheck()
     {
-        // Определяем направление луча в зависимости от поворота персонажа
         Vector2 frontDirection = isFacingRight ? Vector2.right : Vector2.left;
         Vector2 backDirection = isFacingRight ? Vector2.left : Vector2.right;
 
-        // Проверяем луч спереди
         bool frontEnemyFound = CastRayWithTeleportCheck(transform.position, frontDirection);
-        // Проверяем луч сзади
         bool backEnemyFound = CastRayWithTeleportCheck(transform.position, backDirection);
+
+        float pulseSpeed = enemyDetected || enemyDetectedBehind ? 0.2f : 0.5f; // Быстрый пульс, если враг обнаружен
 
         // Обрабатываем обнаружение врага спереди
         if (frontEnemyFound && !enemyDetected)
         {
             enemyDetected = true;
-            playerPulseUI?.StartPulse();
+            playerPulseUI?.SetPulseSpeed(pulseSpeed); // Устанавливаем скорость пульса
         }
         else if (!frontEnemyFound && enemyDetected)
         {
             enemyDetected = false;
-            playerPulseUI?.StopPulse();
+            playerPulseUI?.SetPulseSpeed(0.5f); // Возвращаем к нормальной скорости
         }
 
         // Обрабатываем обнаружение врага сзади
         if (backEnemyFound && !enemyDetectedBehind)
         {
             enemyDetectedBehind = true;
-            playerPulseUI?.StartPulse();
+            playerPulseUI?.SetPulseSpeed(pulseSpeed); // Устанавливаем скорость пульса
         }
         else if (!backEnemyFound && enemyDetectedBehind)
         {
             enemyDetectedBehind = false;
-            // Останавливаем пульс только если враг не обнаружен ни спереди, ни сзади
-            if (!enemyDetected)
-            {
-                playerPulseUI?.StopPulse();
-            }
+            playerPulseUI?.SetPulseSpeed(0.5f); // Возвращаем к нормальной скорости
         }
     }
 
