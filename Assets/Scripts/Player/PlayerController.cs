@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 movement;
     private bool isHidden = false;
-    private float lastTime = 0f;
+    //private float lastTime = 0f;
     private float lastStepTime = 0f;
     public bool IsHidden { get { return isHidden; } }
 
