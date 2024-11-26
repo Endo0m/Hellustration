@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.EventSystems;
 using DG.Tweening;
 
 public class CollectController : MonoBehaviour
@@ -12,10 +11,9 @@ public class CollectController : MonoBehaviour
     [SerializeField] private int totalItemsToCollect = 3;
 
     [Header("Hint Inventory Settings")]
-    [SerializeField] private Transform hintInventoryUIParent;
-    [SerializeField] private GameObject hintSlotPrefab;
     [SerializeField] private GameObject hintPanel;
     [SerializeField] private TextMeshProUGUI hintTextComponent;
+    [SerializeField] private Image[] existingScrollSlots; // Существующие слоты для свитков в UI
 
     [Header("Hint Panel Settings")]
     [SerializeField] private Button closeHintButton;
@@ -33,11 +31,14 @@ public class CollectController : MonoBehaviour
     private List<HintItem> hintInventory = new List<HintItem>();
     private int collectedItemCount = 0;
     private bool isReadingHint = false;
+    private HintItem currentHintItem;
+    private Pause pauseController;
 
     private void Start()
     {
         audioSource = gameObject.AddComponent<AudioSource>();
         soundManager = FindObjectOfType<SoundManager>();
+        pauseController = FindObjectOfType<Pause>();
 
         foreach (Transform child in inventoryUIParent)
         {
@@ -89,14 +90,45 @@ public class CollectController : MonoBehaviour
     {
         PlaySound(hintItem.CollectSoundKey);
         hintInventory.Add(hintItem);
-        DisplayHintInUI(hintItem);
+
+        // Находим соответствующий слот по имени свитка (например, "scroll_1" ищет existingScrollSlots[0])
+        int scrollIndex = GetScrollIndex(hintItem.name) - 1;
+        if (scrollIndex >= 0 && scrollIndex < existingScrollSlots.Length)
+        {
+            Image scrollSlot = existingScrollSlots[scrollIndex];
+            // Обновляем спрайт в UI
+            scrollSlot.sprite = hintItem.CollectibleSprite;
+
+            Button button = scrollSlot.GetComponent<Button>();
+            if (button == null)
+            {
+                button = scrollSlot.gameObject.AddComponent<Button>();
+            }
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() => ShowHint(hintItem.HintText, hintItem));
+        }
+    }
+
+    private int GetScrollIndex(string scrollName)
+    {
+        // Извлекаем номер из имени свитка (scroll_1 -> 1)
+        string numberPart = scrollName.Replace("scroll_", "").Replace("(Clone)", "");
+        int index;
+        return int.TryParse(numberPart, out index) ? index : -1;
     }
 
     private void ShowHint(string hintText, HintItem hintItem)
     {
-        isReadingHint = true;
-        PauseGame();
+        if (isReadingHint) return;
 
+        currentHintItem = hintItem;
+        isReadingHint = true;
+        if (pauseController != null)
+        {
+            pauseController.SetHintOpen(true);
+        }
+
+        PauseGame();
         PlaySound(hintOpenSoundKey);
 
         hintPanel.SetActive(true);
@@ -106,16 +138,6 @@ public class CollectController : MonoBehaviour
         hintPanel.transform.DOScale(Vector3.one, hintPanelAnimationDuration)
             .SetEase(Ease.OutBack)
             .SetUpdate(true);
-
-        if (!hintItem.WasReadFirstTime)
-        {
-            if (shadow != null)
-            {
-                // Используем CurrentShadowSoundKey вместо ShadowSoundKey
-                shadow.AppearAndSpeak(hintItem.CurrentShadowSoundKey);
-            }
-            hintItem.SetReadFirstTime();
-        }
     }
 
     private void CloseHint()
@@ -130,6 +152,21 @@ public class CollectController : MonoBehaviour
                 hintPanel.SetActive(false);
                 ResumeGame();
                 isReadingHint = false;
+
+                if (pauseController != null)
+                {
+                    pauseController.SetHintOpen(false);
+                }
+
+                // Показываем тень после закрытия записки
+                if (!currentHintItem.WasReadFirstTime)
+                {
+                    if (shadow != null)
+                    {
+                        shadow.AppearAndSpeak(currentHintItem.CurrentShadowSoundKey);
+                    }
+                    currentHintItem.SetReadFirstTime();
+                }
             });
     }
 
@@ -146,17 +183,6 @@ public class CollectController : MonoBehaviour
     private void OnDestroy()
     {
         Time.timeScale = 1f;
-    }
-
-    private void DisplayHintInUI(HintItem hintItem)
-    {
-        GameObject slot = Instantiate(hintSlotPrefab, hintInventoryUIParent);
-        Button button = slot.GetComponent<Button>();
-        if (button == null)
-        {
-            button = slot.AddComponent<Button>();
-        }
-        button.onClick.AddListener(() => ShowHint(hintItem.HintText, hintItem));
     }
 
     private void EnableItemDragging()

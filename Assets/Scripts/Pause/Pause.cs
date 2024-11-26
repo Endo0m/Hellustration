@@ -6,11 +6,12 @@ using UnityEngine.SceneManagement;
 public class Pause : MonoBehaviour
 {
     [SerializeField] private Transform menu;
-    //public Rigidbody playerRigidbody;
-    public bool isRPaused = false;
-    private void Update() 
+    private bool isRPaused = false;
+    private bool isHintOpen = false;
+
+    private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) && !isHintOpen)
         {
             if (isRPaused)
             {
@@ -23,6 +24,11 @@ public class Pause : MonoBehaviour
         }
     }
 
+    public void SetHintOpen(bool isOpen)
+    {
+        isHintOpen = isOpen;
+    }
+
     public void PauseScreen()
     {
         Time.timeScale = 0f;
@@ -31,7 +37,6 @@ public class Pause : MonoBehaviour
           .setEaseOutExpo()
           .setDelay(0.1f)
           .setIgnoreTimeScale(true);
-        //playerRigidbody.isKinematic = true;
         isRPaused = true;
     }
 
@@ -40,7 +45,6 @@ public class Pause : MonoBehaviour
         Time.timeScale = 1f;
         isRPaused = false;
         menu.LeanMoveLocalX(-Screen.width, 0.5f).setEaseOutExpo();
-        //playerRigidbody.isKinematic = false;
 
     }
 

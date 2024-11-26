@@ -102,11 +102,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98449bb87e3825c4f825972da92ca77b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collectibleSprite: {fileID: 21300000, guid: cb40165625f42cd41877cbba7c54069f, type: 3}
   hintTextKey: hint_dead
   collectSoundKey: hint_collect
   shadowSoundKey: hint_open_Shadow_1
   shadowSoundKeyRussian: hint_open_Shadow_1_ru
-  hintUIPrefab: {fileID: 2953904362354380284, guid: 498aa713f47b65a4baea5b5570047f59, type: 3}
   fadeDuration: 1
 --- !u!61 &5412436039819689746
 BoxCollider2D:
