@@ -13,22 +13,36 @@ public class BugMovement : MonoBehaviour
     [SerializeField] private Sprite deadBugSprite;
     [SerializeField] private BugZone movementZone;
 
+    [Header("Audio Settings")]
+    private AudioSource audioSource;
+    [SerializeField] private string movementSoundKey = "bugMove";
+    [SerializeField] private string deathSoundKey = "bugDeath";
+    [SerializeField] private float movementSoundInterval = 0.5f;
+
     private Vector2 currentDirection;
     private float directionChangeTimer;
     private bool isDead = false;
+    private float movementSoundTimer;
 
     private void Start()
     {
+        audioSource=GetComponent<AudioSource>();
         if (movementZone == null)
         {
-            // Попытка найти зону в родительском объекте
             movementZone = GetComponentInParent<BugZone>();
         }
-
         if (movementZone != null)
         {
-            // Устанавливаем начальную позицию внутри зоны
             transform.position = movementZone.GetRandomPointInZone();
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f; // 3D звук
+            audioSource.minDistance = 0.2f;
+            audioSource.maxDistance = 3f;
         }
 
         ChooseNewDirection();
@@ -38,12 +52,10 @@ public class BugMovement : MonoBehaviour
     {
         if (isDead || movementZone == null) return;
 
-        // Обработка клика мыши
         if (Input.GetMouseButtonDown(0))
         {
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
-
             if (hitCollider != null && hitCollider.gameObject == gameObject)
             {
                 Die();
@@ -51,26 +63,30 @@ public class BugMovement : MonoBehaviour
             }
         }
 
-        // Изменение направления по таймеру
         directionChangeTimer -= Time.deltaTime;
         if (directionChangeTimer <= 0)
         {
             ChooseNewDirection();
         }
 
-        // Движение
         Vector2 newPosition = (Vector2)transform.position + currentDirection * moveSpeed * Time.deltaTime;
 
-        // Если жук пытается выйти за пределы зоны
         if (!movementZone.IsPointInZone(newPosition))
         {
             newPosition = movementZone.ClampPointToZone(newPosition);
-            ChooseNewDirection(); // Меняем направление при столкновении с границей
+            ChooseNewDirection();
         }
 
         transform.position = newPosition;
 
-        // Поворот спрайта в направлении движения
+        // Воспроизведение звука движения с интервалом через SoundManager
+        movementSoundTimer -= Time.deltaTime;
+        if (movementSoundTimer <= 0)
+        {
+            SoundManager.Instance.PlaySound(movementSoundKey, audioSource);
+            movementSoundTimer = movementSoundInterval;
+        }
+
         float angle = Mathf.Atan2(currentDirection.y, currentDirection.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
     }
@@ -79,7 +95,6 @@ public class BugMovement : MonoBehaviour
     {
         currentDirection = Random.insideUnitCircle.normalized;
         directionChangeTimer = Random.Range(minChangeDirectionTime, maxChangeDirectionTime);
-
         if (headPivot != null)
         {
             headPivot.localPosition = currentDirection;
@@ -93,6 +108,9 @@ public class BugMovement : MonoBehaviour
         {
             bugSprite.sprite = deadBugSprite;
         }
+
+        // Воспроизведение звука смерти через SoundManager
+        SoundManager.Instance.PlaySound(deathSoundKey, audioSource);
     }
 
     private void OnDrawGizmos()
@@ -104,7 +122,6 @@ public class BugMovement : MonoBehaviour
         }
     }
 
-    // Метод для установки зоны движения (можно вызывать из редактора или кода)
     public void SetMovementZone(BugZone zone)
     {
         movementZone = zone;
