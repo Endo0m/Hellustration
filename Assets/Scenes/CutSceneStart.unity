@@ -695,7 +695,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   videoPlayer: {fileID: 941257011}
   englishVideo: {fileID: 32900000, guid: 6b3f9e03360d34c48a4486605466f791, type: 3}
-  russianVideo: {fileID: 32900000, guid: 6b3f9e03360d34c48a4486605466f791, type: 3}
+  russianVideo: {fileID: 32900000, guid: 0673df7c9b346154cb4671039ce07e36, type: 3}
   nameScene: Game
 --- !u!328 &941257011
 VideoPlayer:

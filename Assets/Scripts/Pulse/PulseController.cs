@@ -7,82 +7,57 @@ using UnityEngine.UI;
 public class PulseController : MonoBehaviour
 {
     [SerializeField] private PlayerPulseUI playerPulseUI;
-    private int pulseCounter = 60;
-    private Coroutine pulseIncreaseCoroutine;
+    [SerializeField] private float calmDownDelay = 3f;
 
-    private void Update()
+    private Coroutine calmDownCoroutine;
+    private bool isScared = false;
+    private bool enemyInSight = false;
+
+    private void Start()
     {
-        if (pulseCounter > 65)
-        {
-            playerPulseUI.StartPulse();
-        }
-        else if (pulseCounter < 65)
-        {
-            playerPulseUI.StopPulse();
-        }
-       
+        // Запускаем нормальное состояние при старте
+        playerPulseUI.SetNormalState();
     }
 
-    private IEnumerator PulseCoroutine()
+    // Вызывается для скримера
+    public void Panic()
     {
-        yield return new WaitForSeconds(2f);
-        if (pulseCounter > 60)
+        isScared = true;
+        if (calmDownCoroutine != null)
         {
-            pulseCounter -= 1;
+            StopCoroutine(calmDownCoroutine);
         }
+
+        playerPulseUI.SetPanicState();
+        calmDownCoroutine = StartCoroutine(ScareRoutine());
     }
 
-    public void RestorePulse()
+    // Вызывается при обнаружении врага
+    public void EnemyDetected()
     {
-        StartCoroutine(PulseCoroutine());
+        enemyInSight = true;
+        playerPulseUI.SetPanicState();
     }
 
-    public void UpPulseCounter()
+    // Вызывается когда враг пропадает из виду
+    public void EnemyLost()
     {
-        if (pulseCounter >= 60)
+        enemyInSight = false;
+        if (!isScared) // Возвращаемся к нормальному состоянию только если нет активного испуга
         {
-            pulseCounter += 1;
-        }
-    }
-
-    public void UpPulseScream()
-    {
-        if (pulseCounter >= 60)
-        {
-            pulseCounter += 10;
+            playerPulseUI.SetNormalState();
         }
     }
 
-
-    public void StartIncreasingPulse()
+    private System.Collections.IEnumerator ScareRoutine()
     {
-        UpPulseCounter(5);
-        if (pulseIncreaseCoroutine == null) // Проверяем, не запущена ли уже корутина
+        yield return new WaitForSeconds(calmDownDelay);
+        isScared = false;
+
+        // Возвращаемся к нормальному состоянию только если нет врага в поле зрения
+        if (!enemyInSight)
         {
-            pulseIncreaseCoroutine = StartCoroutine(IncreasePulseCoroutine());
+            playerPulseUI.SetNormalState();
         }
     }
-
-    public void StopIncreasingPulse()
-    {
-        if (pulseIncreaseCoroutine != null)
-        {
-            StopCoroutine(pulseIncreaseCoroutine);
-            pulseIncreaseCoroutine = null; // Сбрасываем ссылку на корутину
-        }
-    }
-
-    private IEnumerator IncreasePulseCoroutine()
-    {
-         yield return new WaitForSeconds(1f); // Ждем 1 секунду
-        UpPulseCounter(5); // Увеличиваем пульс на 5
-
-        StopIncreasingPulse(); // Останавливаем корутину после завершения
-    }
-
-    public void UpPulseCounter(int amount = 1)
-    {
-        pulseCounter += amount; // Увеличиваем пульс без проверки на 60
-    }
-
 }

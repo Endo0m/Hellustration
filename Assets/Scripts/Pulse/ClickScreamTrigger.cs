@@ -8,6 +8,6 @@ public class ClickScreamTrigger : MonoBehaviour
    
     public void PulseActive()
     {
-        pulseController.UpPulseScream();
+        //pulseController.UpPulseScream();
     }
 }

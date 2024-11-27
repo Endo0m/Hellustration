@@ -13,7 +13,7 @@ public class Enemy : MonoBehaviour
     private IPlayerDetector playerDetector;
     private IItemCollector itemCollector;
     [SerializeField] protected ParticleSystem actionParticles;
-
+    [SerializeField] private PulseController pulseController;
     [Header("Detection Settings")]
     [SerializeField] private float frontRayLength = 8f;
     [SerializeField] private float backRayLength = 5f;
@@ -214,6 +214,12 @@ public class Enemy : MonoBehaviour
             {
                 musicController.StartHuntMode();
             }
+            // Добавляем включение паники при начале охоты
+            if (pulseController != null)
+            {
+                pulseController.Panic();
+            }
+
             animationController.PlayAnimation("IsWalking", false);
             animationController.PlayAnimation("IsActing", false);
             animationController.PlayAnimation("IsChasing", true);
@@ -225,6 +231,12 @@ public class Enemy : MonoBehaviour
         isHunterMode = false;
         playerTransform = null;
         InitializeHunterMode();
+
+        // Возвращаем пульс в нормальное состояние
+        if (pulseController != null)
+        {
+            pulseController.EnemyLost();
+        }
 
         animationController.PlayAnimation("IsChasing", false);
         movementController.Stop();
