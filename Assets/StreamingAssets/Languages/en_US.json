@@ -33,6 +33,10 @@
       "value": "Language"
     },
     {
+      "key": "volume",
+      "value": "Volume"
+    },
+    {
       "key": "movement",
       "value": "Movement"
     },
@@ -77,8 +81,12 @@
       "value": "The chef's heart is in its tool, and that is also a missing element of the recipe"
     },
     {
-      "key": "AutorsText",
-      "value": "Narrative Designers:\nElena Kudelina(Vision Holder)\n\nVideographers:\nBelimovich Anna\n\nUnity Developers:\nSadreev Artur\nNikita Egorov\n\n2D Artists:\nMaria Popova\nGritsakovich Andrey\nMaxim Rodimushkin\n\nSound Designer:\nAndrey Gorshkov\n\n\nSpecial Thanks:\nGeorgiy Sergeev - without his support this project would not have been possible"
+      "key": "AuthorsText1",
+      "value": "Narrative Designers:\nElena Kudelina(Vision Holder)\n\nVideographers:\nBelimovich Anna\n\nUnity Developers:\nSadreev Artur\nNikita Egorov\n\n2D Artists:\nMaria Popova\nGritsakovich Andrey"
+    },
+    {
+      "key": "AuthorsText2",
+      "value": "Sound Designer:\nAndrey Gorshkov\n\nWith participation of:\nMaxim Rodimushkin\nVladimir Pan\n\nSpecial Thanks:\nGeorgiy Sergeev - without his support this project would not have been possible"
     }
   ]
 }
