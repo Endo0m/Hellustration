@@ -14,9 +14,10 @@ public class BugMovement : MonoBehaviour
     [SerializeField] private BugZone movementZone;
 
     [Header("Audio Settings")]
-    private AudioSource audioSource;
-    [SerializeField] private string[] movementSoundKeys = { "bugMove1", "bugMove2", "bugMove3" }; // Массив ключей для звуков движения
-    [SerializeField] private string[] deathSoundKeys = { "bugDeath1", "bugDeath2", "bugDeath3", "bugDeath4", "bugDeath5", "bugDeath6" }; // Массив ключей для звуков смерти
+    private AudioSource movementAudioSource; // Отдельный источник для движения (3D)
+    private AudioSource deathAudioSource;    // Отдельный источник для смерти (2D)
+    [SerializeField] private string[] movementSoundKeys = { "bugMove1", "bugMove2", "bugMove3" };
+    [SerializeField] private string[] deathSoundKeys = { "bugDeath1", "bugDeath2", "bugDeath3", "bugDeath4", "bugDeath5", "bugDeath6" };
     [SerializeField] private float movementSoundInterval = 0.5f;
 
     private Vector2 currentDirection;
@@ -26,7 +27,14 @@ public class BugMovement : MonoBehaviour
 
     private void Start()
     {
-        audioSource = GetComponent<AudioSource>();
+        // Настройка 3D аудио источника для движения
+        movementAudioSource = gameObject.AddComponent<AudioSource>();
+        SetupMovementAudioSource(movementAudioSource);
+
+        // Настройка 2D аудио источника для смерти
+        deathAudioSource = gameObject.AddComponent<AudioSource>();
+        SetupDeathAudioSource(deathAudioSource);
+
         if (movementZone == null)
         {
             movementZone = GetComponentInParent<BugZone>();
@@ -36,16 +44,26 @@ public class BugMovement : MonoBehaviour
             transform.position = movementZone.GetRandomPointInZone();
         }
 
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1f;
-            audioSource.minDistance = 0.2f;
-            audioSource.maxDistance = 3f;
-        }
-
         ChooseNewDirection();
+    }
+
+    private void SetupMovementAudioSource(AudioSource source)
+    {
+        source.playOnAwake = false;
+        source.spatialBlend = 1f; // Полностью 3D звук
+        source.minDistance = 0.2f;
+        source.maxDistance = 3f;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.volume = 0.08f;
+    }
+
+    private void SetupDeathAudioSource(AudioSource source)
+    {
+        source.playOnAwake = false;
+        source.spatialBlend = 0f; // Полностью 2D звук
+        source.minDistance = 1f;
+        source.maxDistance = 500f;
+        source.rolloffMode = AudioRolloffMode.Linear;
     }
 
     private void Update()
@@ -79,12 +97,12 @@ public class BugMovement : MonoBehaviour
 
         transform.position = newPosition;
 
-        // Воспроизведение случайного звука движения с интервалом
+        // Воспроизведение случайного звука движения с интервалом (3D)
         movementSoundTimer -= Time.deltaTime;
         if (movementSoundTimer <= 0 && movementSoundKeys.Length > 0)
         {
             string randomMovementSound = movementSoundKeys[Random.Range(0, movementSoundKeys.Length)];
-            SoundManager.Instance.PlaySound(randomMovementSound, audioSource);
+            SoundManager.Instance.PlaySound(randomMovementSound, movementAudioSource);
             movementSoundTimer = movementSoundInterval;
         }
 
@@ -110,11 +128,11 @@ public class BugMovement : MonoBehaviour
             bugSprite.sprite = deadBugSprite;
         }
 
-        // Воспроизведение случайного звука смерти
+        // Воспроизведение случайного звука смерти (2D)
         if (deathSoundKeys.Length > 0)
         {
             string randomDeathSound = deathSoundKeys[Random.Range(0, deathSoundKeys.Length)];
-            SoundManager.Instance.PlaySound(randomDeathSound, audioSource);
+            SoundManager.Instance.PlaySound(randomDeathSound, deathAudioSource);
         }
     }
 

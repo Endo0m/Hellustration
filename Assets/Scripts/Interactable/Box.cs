@@ -73,7 +73,7 @@ public class Box : MonoBehaviour
         {
             if (item != null && item.activeInHierarchy)
             {
-                item.SetActive(false);
+               // item.SetActive(false);
             }
         }
 

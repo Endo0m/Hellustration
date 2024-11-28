@@ -70,23 +70,23 @@
     },
     {
       "key": "hint_dead",
-      "value": "Bless the dead who died at its hand"
+      "value": "Bless the dead who died at its hand. Use the angel’s elixir on the demon’s main ingredient."
     },
     {
       "key": "hint_past",
-      "value": "Link its past with the present and then you'll help it see what it really is"
+      "value": "Link its past with the present and then you'll help it see what it really is. Use the wings of flies on any Beelzebub’s knife."
     },
     {
       "key": "hint_chef",
-      "value": "The chef's heart is in its tool, and that is also a missing element of the recipe"
+      "value": "The chef's heart is in its tool, and that is also a missing element of the recipe. Put the amethyst in the filling."
     },
     {
       "key": "AuthorsText1",
-      "value": "Narrative Designers:\nElena Kudelina(Vision Holder)\n\nVideographers:\nBelimovich Anna\n\nUnity Developers:\nSadreev Artur\nNikita Egorov\n\n2D Artists:\nMaria Popova\nGritsakovich Andrey"
+      "value": "Narrative Designer:\nElena Kudelina(Vision Holder)\n\nVideographer:\nBelimovich Anna\n\nUnity Developers:\nSadreev Artur\nNikita Egorov\n\n2D Artists:\nMaria Popova\nGritsakovich Andrey"
     },
     {
       "key": "AuthorsText2",
-      "value": "Sound Designer:\nAndrey Gorshkov\n\nWith participation of:\nMaxim Rodimushkin\nVladimir Pan\n\nSpecial Thanks:\nGeorgiy Sergeev - without his support this project would not have been possible"
+      "value": "2D Animation:\nGeorgiy Sergeev\n\nSound Designer & Composer:\nAndrey Gorshkov\n\nWith participation of:\nMaxim Rodimushkin\nVladimir Pan\n\nSpecial Thanks:\nGeorgiy Sergeev - without his support this project would not have been possible"
     }
   ]
 }
