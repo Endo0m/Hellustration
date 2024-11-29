@@ -44,7 +44,7 @@ public class ShadowFollower : MonoBehaviour
 
         // Настройка аниматора для работы независимо от timeScale
         animator.updateMode = AnimatorUpdateMode.UnscaledTime;
-
+        audioSource.priority = 80;
         audioSource.ignoreListenerPause = true;
         soundManager = FindObjectOfType<SoundManager>();
 

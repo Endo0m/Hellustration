@@ -30,6 +30,7 @@ public class Enemy : MonoBehaviour
     [Header("Sound Settings")]
     [SerializeField] private string walkSoundKey = "enemy_walk";
     [SerializeField] private string runSoundKey = "enemy_run";
+    [SerializeField] private string hunterModeSoundKey = "enemy_hunter_mode";
     [SerializeField] private string detectionSoundKey = "enemy_detect";
     [SerializeField] private string[] breathSoundKey;
     [SerializeField] private string[] stomachSoundKey;
@@ -110,7 +111,7 @@ public class Enemy : MonoBehaviour
     {
         if (!isPlayerCaptured && !readyToComplete)
         {
-            CheckCaptureRadius(); // ��������� �������� ������� � �������� ����
+            CheckCaptureRadius();
             UpdateHunterMode();
             if (!isHunterMode)
             {
@@ -118,6 +119,15 @@ public class Enemy : MonoBehaviour
             }
             UpdateMovement();
             CheckFootsteps();
+        }
+        else if (isPlayerCaptured)
+        {
+            // Reset states when captured
+            isChasing = false;
+            isHunterMode = false;
+            playerTransform = null;
+            isMovingToTeleport = false;
+            currentTargetTeleport = null;
         }
     }
 
@@ -214,7 +224,7 @@ public class Enemy : MonoBehaviour
                 audioSource.spatialBlend = 0f; // 0 = 2D sound
                 audioSource.volume = 1f; // Maximum volume
             }
-            audioController.PlaySound(detectionSoundKey);
+            audioController.PlaySound(hunterModeSoundKey);
 
             StopAllCoroutines();
 
@@ -317,7 +327,7 @@ public class Enemy : MonoBehaviour
     }
     private void SearchForTeleport(bool searchingUp)
     {
-        if (Time.time - lastTeleportTime < 2f) return;
+        if (Time.time - lastTeleportTime < 2f || playerTransform == null) return;
 
         TeleportZone[] teleports = FindObjectsOfType<TeleportZone>();
         float targetY = playerTransform.position.y;
@@ -405,11 +415,13 @@ public class Enemy : MonoBehaviour
                 animationController.PlayAnimation("IsChasing", false);
                 animationController.PlayAnimation("IsWalking", false);
 
-                playerController.TriggerDeathSequence();
+                // Play death animation and wait before scene transition
+                playerController.TriggerDeathAnimation(() => {
+                    playerController.TriggerDeathSequence();
+                });
             }
         }
     }
-
 
 
     protected void CompleteLevel()

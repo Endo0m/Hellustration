@@ -47,3 +47,6 @@ TagManager:
   - name: NoShadow
     uniqueID: 1660682101
     locked: 0
+  - name: Enemy
+    uniqueID: 2517240235
+    locked: 0

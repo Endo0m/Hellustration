@@ -179,47 +179,31 @@ public class PlayerController : MonoBehaviour
 
     public void TriggerDeathSequence()
     {
-        // Disable player controls
-        this.enabled = false;
-
-        // Stop movement
-        rb.velocity = Vector2.zero;
-
-        // Optionally, disable the player's sprite renderer to make them invisible
+        // Hide player sprite
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
             spriteRenderer.enabled = false;
         }
 
-        // Load death scene instead of showing death canvas
+        // Load death scene
         SceneManager.LoadScene("SceneDiePlayer");
-
-      
     }
 
     public void TriggerDeathAnimation(System.Action onDeathComplete)
     {
-        animator.SetTrigger("Die"); // Предполагается, что у вас есть триггер "Die" для анимации смерти
+        // Disable controls immediately
+        this.enabled = false;
+        rb.velocity = Vector2.zero;
+
+        animator.SetTrigger("Die");
         StartCoroutine(HandleDeathAnimation(onDeathComplete));
     }
 
     private IEnumerator HandleDeathAnimation(System.Action onDeathComplete)
     {
-        // Ждем пока начнется анимация
-        yield return new WaitForEndOfFrame();
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-
-        // Проверяем, что анимация действительно перешла в состояние "Die"
-        if (stateInfo.IsName("Die"))
-        {
-            yield return new WaitForSeconds(stateInfo.length);
-        }
-        else
-        {
-            // Если анимация не началась, устанавливаем некоторое время ожидания по умолчанию
-            yield return new WaitForSeconds(1f);
-        }
+        // Wait for animation length or default time
+        yield return new WaitForSeconds(2f); // Adjust time as needed
 
         onDeathComplete?.Invoke();
     }
