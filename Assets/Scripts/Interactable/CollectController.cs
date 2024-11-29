@@ -73,11 +73,11 @@ public class CollectController : MonoBehaviour
             DraggableUIItem uiItem = inventoryItems[itemName];
             uiItem.UpdateSprite(item.ItemSprite);
             collectedItemCount++;
-
-            if (collectedItemCount >= totalItemsToCollect)
-            {
-                EnableItemDragging();
-            }
+            uiItem.SetDraggable(true);
+            /* if (collectedItemCount >= totalItemsToCollect)
+             {
+                 EnableItemDragging();
+             }*/
             item.FadeOutAndDisable();
         }
         else

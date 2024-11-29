@@ -203,7 +203,19 @@ public class Enemy : MonoBehaviour
         if (player != null)
         {
             playerTransform = player.transform;
+
+            // Reset the last detection sound time to ensure sound plays
+            lastDetectionSoundTime = 0f;
+
+            // Play detection sound at max volume in 2D
+            AudioSource audioSource = GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.spatialBlend = 0f; // 0 = 2D sound
+                audioSource.volume = 1f; // Maximum volume
+            }
             audioController.PlaySound(detectionSoundKey);
+
             StopAllCoroutines();
 
             if (actionParticles != null && actionParticles.isPlaying)
@@ -214,7 +226,6 @@ public class Enemy : MonoBehaviour
             {
                 musicController.StartHuntMode();
             }
-            // Добавляем включение паники при начале охоты
             if (pulseController != null)
             {
                 pulseController.Panic();
@@ -232,7 +243,9 @@ public class Enemy : MonoBehaviour
         playerTransform = null;
         InitializeHunterMode();
 
-        // Возвращаем пульс в нормальное состояние
+        // Reset the last detection sound time
+        lastDetectionSoundTime = 0f;
+
         if (pulseController != null)
         {
             pulseController.EnemyLost();
