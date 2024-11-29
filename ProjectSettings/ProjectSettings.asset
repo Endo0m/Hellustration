@@ -161,7 +161,8 @@ PlayerSettings:
   resetResolutionOnWindowResize: 0
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
-  applicationIdentifier: {}
+  applicationIdentifier:
+    Standalone: com.2024.Q4.Team1.Hellustration
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -768,7 +769,13 @@ PlayerSettings:
   XboxOneOverrideIdentityName: 
   XboxOneOverrideIdentityPublisher: 
   vrEditorSettings: {}
-  cloudServicesEnabled: {}
+  cloudServicesEnabled:
+    Build: 0
+    Game Performance: 0
+    Legacy Analytics: 0
+    Purchasing: 0
+    UDP: 0
+    Unity Ads: 0
   luminIcon:
     m_Name: 
     m_ModelFolderPath: 
@@ -788,11 +795,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 34680ea6-26ff-42ed-ae03-b4c82f4dd0da
+  cloudProjectId: b872448c-6af8-4159-8030-f48735ddb2cc
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: HorrorBox 2024-11-05_19-59-49
-  organizationId: nikholat
+  projectName: Hellustration
+  organizationId: end0om
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

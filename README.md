@@ -5,15 +5,13 @@
 © 2024 2024.Q4.Team1. This work is licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.txt).
 
 ## About
-Hellustration is a 2D horror adventure game where players guide Lucy through a mysterious hotel trapped within the panels of a dark comic book. Each floor harbors its own demon and untold stories, combining point-and-click gameplay with modern stealth mechanics in a haunting hand-drawn world.
+This is a game about a girl trapped in a hellish hotel, confined within comic book pages. As the heroine gets closer to the exit, the demons she must defeat become darker and more terrifying. Hide from demons, explore locations, find items and create traps for demons to advance to the next floor.
 
 ## Key Features
-- Hand-drawn sketch-art style
-- Rich environmental interaction system
-- Atmospheric horror with dynamic sound design
-- Strategic stealth and puzzle-solving gameplay
-- Meaningful choice-based narrative
-- Inventory management system
+-Unique sketch-art style depicting a dark comic world
+-Immersive horror amplified by tension-building sound design and demon hunting mechanics
+-Strategic gameplay combining item search, environment interaction, and trap crafting
+Demo features one haunted hotel floor showcasing core mechanics and atmosphere
 
 ## Development Status
 The game is currently in development, with a demo version available featuring one haunted floor of the hotel.
@@ -35,7 +33,7 @@ The game is currently in development, with a demo version available featuring on
 - Maria Popova
 - Andrey Gritsakov
 
-### Animation
+### 2D Animations
 - Georgiy Sergeev
 
 ### Video
@@ -50,3 +48,4 @@ The game is currently in development, with a demo version available featuring on
 
 ## Contact
 arthur.sadreev@gmail.com
+kudelina.l@yandex.ru
