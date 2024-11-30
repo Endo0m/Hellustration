@@ -78,16 +78,39 @@ public class Enemy : MonoBehaviour
 
     public void RoarSound()
     {
-        var index = Random.Range(0, breathSoundKey.Length -1);
+        var index = Random.Range(0, breathSoundKey.Length - 1);
         var clip = breathSoundKey[index];
+        // Получаем AudioSource
+        AudioSource audioSource = GetComponent<AudioSource>();
+        if (audioSource != null)
+        {
+            // Устанавливаем промежуточное значение между 2D и 3D (0.5 = 50% смешивание)
+            audioSource.spatialBlend = 0.5f;
+            // Повышаем громкость
+            audioSource.volume = 1f;
+            // Устанавливаем высокий приоритет
+            audioSource.priority = 128; // средний приоритет, можно сделать 0 для самого высокого
+        }
         audioController.PlaySound(clip);
-    }   
+    }
+
     public void StomatchSound()
     {
-        var index = Random.Range(0, stomachSoundKey.Length -1);
+        var index = Random.Range(0, stomachSoundKey.Length - 1);
         var clip = stomachSoundKey[index];
+        // Получаем AudioSource
+        AudioSource audioSource = GetComponent<AudioSource>();
+        if (audioSource != null)
+        {
+            // Устанавливаем промежуточное значение между 2D и 3D
+            audioSource.spatialBlend = 0.5f;
+            // Повышаем громкость
+            audioSource.volume = 1f;
+            // Устанавливаем высокий приоритет
+            audioSource.priority = 128; // средний приоритет, можно сделать 0 для самого высокого
+        }
         audioController.PlaySound(clip);
-    } 
+    }
     private void InitializeComponents()
     {
         movementController = gameObject.AddComponent<MovementController>();
@@ -223,6 +246,7 @@ public class Enemy : MonoBehaviour
             {
                 audioSource.spatialBlend = 0f; // 0 = 2D sound
                 audioSource.volume = 1f; // Maximum volume
+                audioSource.priority = 0;
             }
             audioController.PlaySound(hunterModeSoundKey);
 

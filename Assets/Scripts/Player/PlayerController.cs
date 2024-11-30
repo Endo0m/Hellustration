@@ -11,11 +11,10 @@ public class PlayerController : MonoBehaviour
 
     [Header("Components")]
     [SerializeField] private GameObject playerLight;
-    
 
     [Header("Sound Settings")]
-    [SerializeField] private string walkSoundKey = "player_walk";
-    [SerializeField] private string runSoundKey = "player_run";
+    [SerializeField] private string[] walkSoundKeys = { "player_run_1", "player_run_2", "player_run_3", "player_run_4", "player_run_5", "player_run_6" }; // Array of walk sound keys
+    [SerializeField] private string[] runSoundKeys = { "player_run_1", "player_run_2", "player_run_3", "player_run_4", "player_run_5", "player_run_6" }; // Array of run sound keys
     [SerializeField] private float walkStepInterval = 0.5f;
     [SerializeField] private float runStepInterval = 0.3f;
     [SerializeField] private float audioVolume = 0.05f;
@@ -23,10 +22,9 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 movement;
     private bool isHidden = false;
-    //private float lastTime = 0f;
     private float lastStepTime = 0f;
     public bool IsHidden { get { return isHidden; } }
-
+    private string lastPlayedSound = "";
     private AudioSource audioSource;
     private Animator animator;
     private SoundManager soundManager;
@@ -108,8 +106,21 @@ public class PlayerController : MonoBehaviour
     {
         if (soundManager != null && audioSource != null)
         {
-            string soundKey = isRunning ? runSoundKey : walkSoundKey;
-            soundManager.PlaySound(soundKey, audioSource);
+            string[] currentSoundKeys = isRunning ? runSoundKeys : walkSoundKeys;
+
+            if (currentSoundKeys.Length > 0)
+            {
+                string randomSoundKey;
+                do
+                {
+                    // Выбираем случайный звук
+                    int randomIndex = Random.Range(0, currentSoundKeys.Length);
+                    randomSoundKey = currentSoundKeys[randomIndex];
+                } while (randomSoundKey == lastPlayedSound && currentSoundKeys.Length > 1); // Повторяем если выпал тот же звук и есть другие варианты
+
+                lastPlayedSound = randomSoundKey; // Сохраняем последний проигранный звук
+                soundManager.PlaySound(randomSoundKey, audioSource);
+            }
         }
     }
 

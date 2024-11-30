@@ -789,8 +789,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a71013ad70efe3e48893ce07eebf85b2, type: 2}
-  m_sharedMaterial: {fileID: 3398650973408653458, guid: a71013ad70efe3e48893ce07eebf85b2, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: cbe2c5974d1545149957c305da56ba44, type: 2}
+  m_sharedMaterial: {fileID: 3398650973408653458, guid: cbe2c5974d1545149957c305da56ba44, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1500,8 +1500,8 @@ MonoBehaviour:
   lightningImage1: {fileID: 1300674039}
   lightningImage2: {fileID: 2096744705}
   lightningImage3: {fileID: 1977870707}
-  minDelay: 4
-  maxDelay: 8
+  minDelay: 5
+  maxDelay: 10
   audioSource: {fileID: 214895718}
   lightningSound: {fileID: 8300000, guid: ab6950ffcda349a4780d94192bc67688, type: 3}
 --- !u!82 &214895718
@@ -7171,8 +7171,8 @@ MonoBehaviour:
     Thanks:\nGeorgiy Sergeev - without his support this project would not have been
     possible"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a71013ad70efe3e48893ce07eebf85b2, type: 2}
-  m_sharedMaterial: {fileID: 3398650973408653458, guid: a71013ad70efe3e48893ce07eebf85b2, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: cbe2c5974d1545149957c305da56ba44, type: 2}
+  m_sharedMaterial: {fileID: 3398650973408653458, guid: cbe2c5974d1545149957c305da56ba44, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

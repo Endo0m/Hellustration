@@ -68,15 +68,4 @@ public class ItemLifespan : MonoBehaviour
         }
     }
 
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        // Проверка в редакторе для уведомления о некорректных значениях
-        if (requiredWaypoint < 0)
-        {
-            Debug.LogWarning("Required waypoint should not be negative!");
-            requiredWaypoint = 0;
-        }
-    }
-#endif
 }
